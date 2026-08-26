@@ -1140,6 +1140,7 @@ function renderLibraryTile(book) {
 function renderLibrary() {
   var allBooks = loadLibraryList(),
     query = (librarySearchInput.value || "").trim().toLowerCase();
+    librarySearchInput.placeholder = "Search " + allBooks.length + (1 === allBooks.length ? " book" : " books") + "...";
   var sortFn = function(sortType) {
       switch (sortType) {
         case "title":
