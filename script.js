@@ -21,7 +21,8 @@ var state = {
     margin: 12,
     wpm: 220,
     lastOpenBookId: null,
-    libraryOpen: false
+    libraryOpen: false,
+    librarySort: "recent"
   },
   $ = function(s) {
     return document.querySelector(s)
@@ -1125,7 +1126,7 @@ function updateReadingStatus(bookId, status) {
 }
 
 function renderLibraryTile(book) {
-  var coverHtml = book.cover ? '<img src="' + book.cover + '" alt="' + escapeHtml(book.title) + '">' : '<div class="placeholder">' + escapeHtml((book.title || "?").charAt(0).toUpperCase()) + "</div>",
+  var coverHtml = book.cover ? '<img src="' + book.cover + '" alt="' + escapeHtml(book.title) + '" loading="lazy" decoding="async">' : '<div class="placeholder">' + escapeHtml((book.title || "?").charAt(0).toUpperCase()) + "</div>",
     statusBadge = "";
   "reading" === book.status ? statusBadge = '<span class="status-badge">Reading</span>' : "complete" === book.status && (statusBadge = '<span class="status-badge status-badge-complete">Complete</span>');
   var pct = Math.round(100 * (book.progress || 0)),
@@ -1163,6 +1164,9 @@ function renderLibrary() {
       return -1 !== (b.title + " " + (b.author || "")).toLowerCase().indexOf(query)
     }) : sortedBooks,
     gridHtml = "";
+  visibleBookIds = filtered.map(function(b) {
+    return b.id
+  });
   gridHtml = 0 === allBooks.length ? '<div class="library-empty">Your library is empty. Add a book to get started.</div>' : 0 === filtered.length && query ? '<div class="library-grid-empty">No books match your search.</div>' : 0 === baseList.length ? '<div class="library-empty">' + (currentGroupFilter ? "No books in this group yet." : "All caught up — every book is marked complete.") + "</div>" : '<div class="library-grid">' + filtered.map(function(b) {
     return renderLibraryTile(b)
   }).join("") + "</div>";
@@ -1242,14 +1246,17 @@ function renderLibrary() {
       })
     })
   }
-  updateLibraryHeader(), updateSelectionBar()
+  updateLibraryHeader(), updateSelectionBar();
+  libraryScrollbar && libraryScrollbar.update()
 }
 
 var selectionMode = !1,
   selectedBookIds = new Set,
+  visibleBookIds = [],
   librarySelectionBar = $("#librarySelectionBar"),
   selectionCount = $("#selectionCount"),
   selectionCancelBtn = $("#selectionCancelBtn"),
+  selectionSelectAllBtn = $("#selectionSelectAllBtn"),
   selectionStatusBtns = $$(".selection-status-btn"),
   selectionGroupBtn = $("#selectionGroupBtn"),
   selectionRemoveGroupBtn = $("#selectionRemoveGroupBtn"),
@@ -1289,7 +1296,32 @@ groupDeleteCancel.addEventListener("click", closeGroupDeleteConfirm), groupDelet
 function updateSelectionBar() {
   var n = selectedBookIds.size;
   if (!selectionMode || 0 === n) return librarySelectionBar.classList.remove("is-open"), void closeGroupPicker();
-  selectionCount.textContent = n + (1 === n ? " selected" : " selected"), librarySelectionBar.classList.add("is-open"), selectionRemoveGroupBtn.hidden = !isCustomGroupKey(currentGroupFilter)
+  selectionCount.textContent = n + (1 === n ? " selected" : " selected"), librarySelectionBar.classList.add("is-open"), selectionRemoveGroupBtn.hidden = !isCustomGroupKey(currentGroupFilter);
+  if (selectionSelectAllBtn) {
+    var allSelected = visibleBookIds.length > 0 && visibleBookIds.every(function(id) {
+      return selectedBookIds.has(id)
+    });
+    selectionSelectAllBtn.textContent = allSelected ? "Deselect all" : "Select all", selectionSelectAllBtn.hidden = 0 === visibleBookIds.length
+  }
+}
+
+function updateTileSelectionUI(bookId) {
+  var tile = libraryBody.querySelector('.library-tile[data-book-id="' + bookId + '"]');
+  if (!tile) return;
+  var isSelected = selectedBookIds.has(bookId);
+  tile.classList.toggle("is-selected", isSelected);
+  var check = tile.querySelector(".library-tile-check");
+  check && check.classList.toggle("is-checked", isSelected)
+}
+
+function toggleSelectAll() {
+  if (!visibleBookIds.length) return;
+  var allSelected = visibleBookIds.every(function(id) {
+    return selectedBookIds.has(id)
+  });
+  allSelected ? (selectedBookIds.clear(), exitSelectionMode()) : (visibleBookIds.forEach(function(id) {
+    selectedBookIds.add(id), updateTileSelectionUI(id)
+  }), selectionMode = !0, updateSelectionBar())
 }
 
 function enterSelectionMode(bookId) {
@@ -1297,7 +1329,7 @@ function enterSelectionMode(bookId) {
 }
 
 function toggleBookSelection(bookId) {
-  selectedBookIds.has(bookId) ? selectedBookIds.delete(bookId) : selectedBookIds.add(bookId), 0 === selectedBookIds.size ? exitSelectionMode() : renderLibrary()
+  selectedBookIds.has(bookId) ? selectedBookIds.delete(bookId) : selectedBookIds.add(bookId), 0 === selectedBookIds.size ? exitSelectionMode() : (updateTileSelectionUI(bookId), updateSelectionBar())
 }
 
 function exitSelectionMode() {
@@ -1367,7 +1399,7 @@ function bulkDelete() {
 }
 selectionCancelBtn.addEventListener("click", function() {
   exitSelectionMode()
-}), selectionStatusBtns.forEach(function(btn) {
+}), selectionSelectAllBtn && selectionSelectAllBtn.addEventListener("click", toggleSelectAll), selectionStatusBtns.forEach(function(btn) {
   btn.addEventListener("click", function() {
     bulkSetStatus(btn.getAttribute("data-status"))
   })
@@ -1388,6 +1420,26 @@ function resolveHref(dir, href) {
   return parts.forEach(function(part) {
     "." !== part && "" !== part && (".." === part ? out.pop() : out.push(part))
   }), out.join("/")
+}
+
+// EPUB/XHTML source files sometimes use XML-style self-closing tags for
+// elements that aren't actually void in HTML (e.g. `<a id="x"/>` used as an
+// empty bookmark). When parsed with DOMParser in "text/html" mode, the
+// browser ignores the trailing "/" for non-void tags and treats it as an
+// unclosed opening tag — silently swallowing all following content into it
+// until the next matching closing/opening tag. That makes unrelated text
+// (sometimes whole paragraphs) appear wrapped in a link, div, etc. Rewriting
+// these into an explicit empty pair (`<a id="x"></a>`) before parsing keeps
+// them truly empty, matching the source's intent.
+var HTML_VOID_TAGS = {
+  area: 1, base: 1, br: 1, col: 1, embed: 1, hr: 1, img: 1, input: 1,
+  link: 1, meta: 1, param: 1, source: 1, track: 1, wbr: 1
+};
+
+function fixSelfClosingTags(text) {
+  return text.replace(/<([a-zA-Z][a-zA-Z0-9:-]*)((?:\s+[^<>]*)?)\/>/g, function(match, tag, attrs) {
+    return HTML_VOID_TAGS[tag.toLowerCase()] ? match : "<" + tag + attrs + "></" + tag + ">"
+  })
 }
 
 function zipFileLookup(zip, href) {
@@ -1422,7 +1474,7 @@ libraryToggle.addEventListener("click", function(e) {
   e.stopPropagation(), sortDropdown.classList.toggle("is-open")
 }), sortDropdown.addEventListener("click", function(e) {
   var btn = e.target.closest("button[data-sort]");
-  btn && (currentSort = btn.getAttribute("data-sort"), sortDropdown.querySelectorAll("button").forEach(function(b) {
+  btn && (currentSort = btn.getAttribute("data-sort"), state.librarySort = currentSort, saveState(), sortDropdown.querySelectorAll("button").forEach(function(b) {
     b.classList.remove("is-active")
   }), btn.classList.add("is-active"), sortDropdown.classList.remove("is-open"), renderLibrary())
 }), document.addEventListener("click", function(e) {
@@ -1670,7 +1722,7 @@ function parseEpub(file, fileName) {
             navDir = -1 !== navHref.indexOf("/") ? navHref.substring(0, navHref.lastIndexOf("/") + 1) : "",
             navFile = zip.file(navHref);
           navFile && (tocPromise = navFile.async("text").then(function(navText) {
-            var navDoc = (new DOMParser).parseFromString(navText, "text/html"),
+            var navDoc = (new DOMParser).parseFromString(fixSelfClosingTags(navText), "text/html"),
               rootOl = navDoc.querySelector("nav ol") || navDoc.querySelector("ol"),
               map = {};
             function walkNavOl(ol) {
@@ -1768,7 +1820,7 @@ function parseEpub(file, fileName) {
             if (!item) return Promise.resolve(null);
             var zf = zip.file(item.href);
             return zf ? zf.async("text").then(function(text) {
-              var doc = (new DOMParser).parseFromString(text, "text/html"),
+              var doc = (new DOMParser).parseFromString(fixSelfClosingTags(text), "text/html"),
                 bodyEl = doc.body;
               if (!bodyEl) return null;
               var epubType = bodyEl.getAttribute("epub:type") || "";
@@ -2332,9 +2384,15 @@ function addChapterBylines() {
 }
 
 function init() {
-  loadState(), bodySizeInput.value = state.bodySize, bodySpacingInput.value = state.bodySpacing, bodyIndentInput.value = state.bodyIndent, applyBodyTypography(), applyTitleFont(), applyAuthorFont(), addChapterBylines(), renderFontToggles(), renderSavedThemesList(), updateCustomFontRowVisibility(), state.customFontName && (customFontNameInput.value = state.customFontName, state.customFontUrl && (fontStatus.textContent = "Loaded")), document.documentElement.style.setProperty("--bg-size", state.bgSize || "auto"), bgSizeGroup.querySelectorAll(".toggle-btn").forEach(function(b) {
+  loadState();
+  currentSort = state.librarySort || "recent";
+  sortDropdown.querySelectorAll("button[data-sort]").forEach(function(b) {
+    b.classList.toggle("is-active", b.getAttribute("data-sort") === currentSort)
+  });
+  bodySizeInput.value = state.bodySize, bodySpacingInput.value = state.bodySpacing, bodyIndentInput.value = state.bodyIndent, applyBodyTypography(), applyTitleFont(), applyAuthorFont(), addChapterBylines(), renderFontToggles(), renderSavedThemesList(), updateCustomFontRowVisibility(), state.customFontName && (customFontNameInput.value = state.customFontName, state.customFontUrl && (fontStatus.textContent = "Loaded")), document.documentElement.style.setProperty("--bg-size", state.bgSize || "auto"), bgSizeGroup.querySelectorAll(".toggle-btn").forEach(function(b) {
     b.classList.toggle("is-selected", b.getAttribute("data-bg-size") === (state.bgSize || "auto"))
   }), renderThemeToggles(), state.activeThemeIndex >= 0 && state.activeThemeIndex < state.savedThemes.length ? (state.themeMode = "saved", applyThemeByIndex(state.activeThemeIndex)) : "custom" === state.themeMode ? (document.body.setAttribute("data-theme", "custom"), document.getElementById("themeEditor").classList.add("is-open"), customPaperInput.value = state.customPaper || "#E9E1CB", customInkInput.value = state.customInk || "#2A2419", applyCustomTheme(state.customPaper, state.customInk, "custom")) : (document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", "")), state.customBgUrl && (document.body.classList.add("has-custom-bg"), document.documentElement.style.setProperty("--custom-bg-url", 'url("' + state.customBgUrl + '")'), bgFilename.textContent = "Custom background", bgPreview.style.backgroundImage = 'url("' + state.customBgUrl + '")', bgPreview.style.display = "block");
+  marginInput.value = state.margin || 12, document.documentElement.style.setProperty("--margin", (state.margin || 12) + "%");
   var lastBook = state.lastOpenBookId ? findBook(state.lastOpenBookId) : null;
   lastBook && loadBook(lastBook), (state.libraryOpen || !lastBook) && openLibrary()
 }
@@ -2358,24 +2416,40 @@ initLibraryStorage().then(function() {
     book && idbPutBook(book)
   })
 });
-(function() {
-  var thumb = document.getElementById("customScrollbarThumb");
-  if (!thumb) return;
-  var hideTimer = null,
+function setupCustomScrollbar(thumb, scrollEl) {
+  if (!thumb) return null;
+  var isWindow = !scrollEl || scrollEl === window,
+    hideTimer = null,
     dragging = false,
     dragStartY = 0,
     dragStartScroll = 0;
 
+  function viewH() {
+    return isWindow ? window.innerHeight : scrollEl.clientHeight
+  }
+
+  function fullH() {
+    return isWindow ? document.documentElement.scrollHeight : scrollEl.scrollHeight
+  }
+
+  function scrollTop() {
+    return isWindow ? (window.scrollY || document.documentElement.scrollTop) : scrollEl.scrollTop
+  }
+
+  function scrollTo(v) {
+    isWindow ? window.scrollTo(0, v) : (scrollEl.scrollTop = v)
+  }
+
   function metrics() {
-    var viewH = window.innerHeight,
-      fullH = document.documentElement.scrollHeight,
-      thumbH = Math.max(30, viewH * viewH / fullH);
+    var vh = viewH(),
+      fh = fullH(),
+      thumbH = Math.max(30, vh * vh / fh);
     return {
-      viewH: viewH,
-      fullH: fullH,
+      viewH: vh,
+      fullH: fh,
       thumbH: thumbH,
-      maxThumbTop: viewH - thumbH,
-      maxScroll: fullH - viewH
+      maxThumbTop: vh - thumbH,
+      maxScroll: fh - vh
     }
   }
 
@@ -2383,8 +2457,8 @@ initLibraryStorage().then(function() {
     var m = metrics();
     if (m.fullH <= m.viewH + 1) return void(thumb.style.opacity = "0", thumb.style.pointerEvents = "none");
     thumb.style.pointerEvents = "auto";
-    var scrollTop = window.scrollY || document.documentElement.scrollTop,
-      thumbTop = m.maxScroll > 0 ? scrollTop / m.maxScroll * m.maxThumbTop : 0;
+    var top = scrollTop(),
+      thumbTop = m.maxScroll > 0 ? top / m.maxScroll * m.maxThumbTop : 0;
     thumb.style.height = m.thumbH + "px", thumb.style.top = thumbTop + "px"
   }
 
@@ -2394,21 +2468,31 @@ initLibraryStorage().then(function() {
     }, 900)
   }
   thumb.addEventListener("mousedown", function(e) {
-    dragging = !0, dragStartY = e.clientY, dragStartScroll = window.scrollY || document.documentElement.scrollTop, thumb.classList.add("is-dragging"), clearTimeout(hideTimer), e.preventDefault()
+    dragging = !0, dragStartY = e.clientY, dragStartScroll = scrollTop(), thumb.classList.add("is-dragging"), clearTimeout(hideTimer), e.preventDefault()
   }), window.addEventListener("mousemove", function(e) {
     if (!dragging) return;
     var m = metrics();
     if (m.maxThumbTop <= 0) return;
     var scrollDelta = (e.clientY - dragStartY) / m.maxThumbTop * m.maxScroll;
-    window.scrollTo(0, dragStartScroll + scrollDelta)
+    scrollTo(dragStartScroll + scrollDelta)
   }), window.addEventListener("mouseup", function() {
     dragging && (dragging = !1, thumb.classList.remove("is-dragging"), clearTimeout(hideTimer), hideTimer = setTimeout(function() {
       thumb.classList.remove("is-visible")
     }, 900))
-  }), window.addEventListener("scroll", showThumb, {
+  }), (isWindow ? window : scrollEl).addEventListener("scroll", showThumb, {
     passive: !0
   }), window.addEventListener("resize", update, {
     passive: !0
-  }), update()
-})()
+  }), window.addEventListener("mousemove", function(e) {
+    dragging || e.clientX < window.innerWidth - 24 || showThumb()
+  }, {
+    passive: !0
+  }), thumb.addEventListener("mouseenter", showThumb), update();
+  return {
+    update: update,
+    showThumb: showThumb
+  }
+}
+setupCustomScrollbar(document.getElementById("customScrollbarThumb"), window);
+var libraryScrollbar = setupCustomScrollbar(document.getElementById("libraryScrollbarThumb"), libraryBody);
 
