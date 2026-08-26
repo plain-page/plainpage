@@ -3241,6 +3241,12 @@ body.library-open .touch-hint {
     Connect
    </button>
   </div>
+  <div class="settings-connection" style="padding-top:0;">
+   <input class="settings-input" id="gdriveFolderId" placeholder="Drive folder ID" style="flex:1;min-width:0;" type="text" value="15hm7VGpCky4dCWOa-jUoM0V-CS14dcLk"/>
+   <button class="settings-connection-action" id="gdriveSyncNow">
+    Sync now
+   </button>
+  </div>
   <div class="settings-scroll">
    <div class="settings-section">
     <div class="settings-section-label">
@@ -3560,6 +3566,12 @@ body.library-open .touch-hint {
        </button>
       </div>
      </div>
+     <button aria-label="Open settings" class="library-btn" id="librarySettingsBtn" title="Settings">
+      <svg fill="currentColor" viewbox="0 0 24 24">
+       <path d="M12,8a4,4,0,1,0,4,4A4,4,0,0,0,12,8Zm0,6a2,2,0,1,1,2-2A2,2,0,0,1,12,14Z"/>
+       <path d="M21.294,13.9l-.444-.256a9.1,9.1,0,0,0,0-3.29l.444-.256a3,3,0,1,0-3-5.2l-.445.257A8.977,8.977,0,0,0,15,3.513V3A3,3,0,0,0,9,3v.513A8.977,8.977,0,0,0,6.152,5.159L5.705,4.9a3,3,0,0,0-3,5.2l.444.256a9.1,9.1,0,0,0,0,3.29l-.444.256a3,3,0,1,0,3,5.2l.445-.257A8.977,8.977,0,0,0,9,20.487V21a3,3,0,0,0,6,0v-.513a8.977,8.977,0,0,0,2.848-1.646l.447.258a3,3,0,0,0,3-5.2Zm-2.548-3.776a7.048,7.048,0,0,1,0,3.75,1,1,0,0,0,.464,1.133l1.084.626a1,1,0,0,1-1,1.733l-1.086-.628a1,1,0,0,0-1.215.165,6.984,6.984,0,0,1-3.243,1.875,1,1,0,0,0-.751.969V21a1,1,0,0,1-2,0V19.748a1,1,0,0,0-.751-.969A6.984,6.984,0,0,1,7.006,16.9a1,1,0,0,0-1.215-.165l-1.084.627a1,1,0,1,1-1-1.732l1.084-.626a1,1,0,0,0,.464-1.133,7.048,7.048,0,0,1,0-3.75A1,1,0,0,0,4.79,8.992L3.706,8.366a1,1,0,0,1,1-1.733l1.086.628A1,1,0,0,0,7.006,7.1a6.984,6.984,0,0,1,3.243-1.875A1,1,0,0,0,11,4.252V3a1,1,0,0,1,2,0V4.252a1,1,0,0,0,.751.969A6.984,6.984,0,0,1,16.994,7.1a1,1,0,0,0,1.215.165l1.084-.627a1,1,0,1,1,1,1.732l-1.084.626A1,1,0,0,0,18.746,10.125Z"/>
+      </svg>
+     </button>
      <button aria-label="Add a book" class="library-btn" id="libraryAddBtn" title="Add a book">
       <svg fill="currentColor" viewbox="0 0 24 24">
        <path d="M13,11V4a1,1,0,0,0-2,0v7H4a1,1,0,0,0,0,2h7v7a1,1,0,0,0,2,0V13h7a1,1,0,0,0,0-2Z">
@@ -4908,6 +4920,29 @@ libraryToggle.addEventListener("click", function(e) {
     })
   }
 });
+
+// new library settings button listener
+var librarySettingsBtn = document.getElementById("librarySettingsBtn");
+if (librarySettingsBtn) {
+  librarySettingsBtn.addEventListener("click", function(e) {
+    e.stopPropagation();
+    openSettings();
+  });
+}
+
+// Set default Drive folder ID if not already stored
+(function() {
+  var folderInput = document.getElementById("gdriveFolderId");
+  var defaultId = "15hm7VGpCky4dCWOa-jUoM0V-CS14dcLk";
+  if (folderInput) {
+    var stored = localStorage.getItem("reader_drive_folder_id");
+    if (!stored) {
+      localStorage.setItem("reader_drive_folder_id", defaultId);
+      folderInput.value = defaultId;
+    }
+  }
+})();
+
 var DROP_EPUB_TYPES = ["toc", "landmarks", "cover", "titlepage", "title-page", "halftitle", "copyright-page", "imprint"];
 
 function epubTypeTokens(t) {
@@ -4920,7 +4955,8 @@ function isDropType(epubType) {
   })
 }
 
-function parseEpub(file) {
+function parseEpub(file, fileName) {
+  fileName = fileName || (file && file.name) || "Untitled.epub";
   return JSZip.loadAsync(file).then(function(zip) {
     var containerFile = zip.file("META-INF/container.xml");
     if (!containerFile) throw new Error("not a valid EPUB (missing container.xml)");
@@ -4939,7 +4975,7 @@ function parseEpub(file) {
           }
           return ""
         }
-        var title = firstText(["dc:title", "title"]) || file.name.replace(/\.epub$/i, ""),
+        var title = firstText(["dc:title", "title"]) || fileName.replace(/\.epub$/i, ""),
           author = firstText(["dc:creator", "creator"]),
           published = (firstText(["dc:date", "date"]) || "").slice(0, 10),
           description = firstText(["dc:description", "description"]),
@@ -4974,8 +5010,8 @@ function parseEpub(file) {
             var guideHref = resolveHref(opfDir, (guideRef.getAttribute("href") || "").split("#")[0]),
               guideFile = zipFileLookup(zip, guideHref);
             guideFile && (coverHrefPromise = guideFile.async("text").then(function(htmlText) {
-              var imgEl = (new DOMParser).parseFromString(htmlText, "text/html").querySelector("img[src], image"),
-                src = imgEl ? imgEl.getAttribute("src") || imgEl.getAttribute("xlink:href") || imgEl.getAttribute("href") : null;
+              var imgEl = (new DOMParser).parseFromString(htmlText, "text/html").querySelector("img[src], image");
+              var src = imgEl ? imgEl.getAttribute("src") || imgEl.getAttribute("xlink:href") || imgEl.getAttribute("href") : null;
               return src ? resolveHref(-1 !== guideHref.indexOf("/") ? guideHref.substring(0, guideHref.lastIndexOf("/") + 1) : "", src) : null
             }).catch(function() {
               return null
@@ -5200,7 +5236,9 @@ function parseEpub(file) {
                 chapters: chapters,
                 addedAt: Date.now(),
                 status: "unread",
-                lastOpened: Date.now()
+                lastOpened: Date.now(),
+                driveId: null,
+                driveModifiedTime: null
               }
             })
           })
@@ -5217,7 +5255,7 @@ libraryFileInput.addEventListener("change", function() {
       failed = 0;
     files.reduce(function(chain, file) {
       return chain.then(function() {
-        return showToast("Parsing " + file.name + "…" + (files.length > 1 ? " (" + (added + failed + 1) + "/" + files.length + ")" : "")), parseEpub(file).then(function(book) {
+        return showToast("Parsing " + file.name + "…" + (files.length > 1 ? " (" + (added + failed + 1) + "/" + files.length + ")" : "")), parseEpub(file, file.name).then(function(book) {
           var list = loadLibraryList();
           list.push(book), saveLibraryList(list) ? added++ : (failed++, showToast('Parsed "' + book.title + '", but it’s too large to save locally.'))
         }).catch(function(err) {
@@ -5546,12 +5584,20 @@ bgSizeGroup.addEventListener("click", function(e) {
 });
 var gdriveDot = $("#gdriveDot"),
   gdriveStatusText = $("#gdriveStatusText"),
-  gdriveConnect = $("#gdriveConnect");
+  gdriveConnect = $("#gdriveConnect"),
+  gdriveFolderId = $("#gdriveFolderId"),
+  gdriveSyncNow = $("#gdriveSyncNow");
+gdriveFolderId.value = localStorage.getItem("reader_drive_folder_id") || "";
+gdriveFolderId.addEventListener("change", function() {
+  localStorage.setItem("reader_drive_folder_id", gdriveFolderId.value.trim())
+});
 gdriveConnect.addEventListener("click", function() {
-  gdriveDot.className = "status-dot syncing", gdriveStatusText.textContent = "Connecting...", gdriveConnect.textContent = "Connecting...", gdriveConnect.disabled = !0, setTimeout(function() {
-    gdriveDot.className = "status-dot online", gdriveStatusText.textContent = "Connected to Drive", gdriveConnect.textContent = "✓ Connected", gdriveConnect.disabled = !0
-  }, 1200)
-}), document.addEventListener("keydown", function(e) {
+  driveSignIn()
+});
+gdriveSyncNow.addEventListener("click", function() {
+  syncWithDrive()
+});
+document.addEventListener("keydown", function(e) {
   if ("Escape" === e.key && (groupDeleteModal.classList.contains("is-open") ? closeGroupDeleteConfirm() : selectionMode ? exitSelectionMode() : (closeSidebar(), closeSettings(), currentGroupFilter ? exitGroup() : closeLibrary())), "INPUT" !== e.target.tagName && "TEXTAREA" !== e.target.tagName)
     if ("ArrowRight" !== e.key) {
       if ("ArrowLeft" !== e.key) return "ArrowDown" === e.key || " " === e.key || "Spacebar" === e.key ? (window.scrollBy({
@@ -5690,30 +5736,217 @@ setTimeout(function() {
 
 </script>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://apis.google.com/js/api.js"></script>
 <script>
+  // ---- Google Drive sync ----
   const CLIENT_ID = '185876513289-u805efh6lsqicckan5oa7a93v8hh0jia.apps.googleusercontent.com';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+  // drive.readonly: list/download epub files from your folder
+  // drive.file: create/update a small progress file this app owns
+  const SCOPES = 'https://www.googleapis.com/auth/drive.readonly https://www.googleapis.com/auth/drive.file';
+  const PROGRESS_FILENAME = 'reader-progress.json';
 
   let accessToken = null;
-  let tokenClient;
+  let tokenClient = null;
+  let driveProgressFileId = localStorage.getItem('reader_drive_progress_file_id') || null;
 
-  window.onload = function () {
+  window.addEventListener('load', function () {
     tokenClient = google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: SCOPES,
-      callback: (resp) => {
-        accessToken = resp.access_token;
-        console.log('Signed in! Token:', accessToken);
-        alert('Signed in successfully!');
-      },
+      callback: function (resp) {
+        if (resp && resp.access_token) {
+          accessToken = resp.access_token;
+          setDriveStatus('online', 'Connected to Drive');
+          syncWithDrive();
+        } else if (!silentAttempt) {
+          setDriveStatus('offline', 'Sign-in failed');
+        }
+        silentAttempt = false;
+      }
     });
-  };
+    // Try a silent (no popup) reconnect on page load if we've synced before.
+    if (localStorage.getItem('reader_drive_folder_id')) {
+      silentAttempt = true;
+      tokenClient.requestAccessToken({ prompt: 'none' });
+    }
+  });
+  var silentAttempt = false;
 
-  function signIn() {
-    tokenClient.requestAccessToken();
+  function setDriveStatus(kind, text) {
+    gdriveDot.className = 'status-dot ' + kind;
+    gdriveStatusText.textContent = text;
+    gdriveConnect.textContent = kind === 'online' ? '✓ Connected' : 'Connect';
+  }
+
+  function driveSignIn() {
+    if (!tokenClient) return;
+    setDriveStatus('syncing', 'Connecting…');
+    // prompt:'' tries a silent re-auth first (no popup) if you've already granted access this session;
+    // if that fails it falls back to the normal consent screen.
+    tokenClient.requestAccessToken({ prompt: accessToken ? '' : 'consent' });
+  }
+
+  function driveFetch(url, options) {
+    options = options || {};
+    options.headers = Object.assign({}, options.headers, { Authorization: 'Bearer ' + accessToken });
+    return fetch(url, options).then(function (res) {
+      if (res.status === 401) {
+        // token expired mid-session — ask the user to reconnect
+        accessToken = null;
+        setDriveStatus('offline', 'Disconnected — reconnect');
+        throw new Error('Drive session expired, please click Connect again.');
+      }
+      if (!res.ok) throw new Error('Drive request failed (' + res.status + ')');
+      return res;
+    });
+  }
+
+  function listDriveEpubs(folderId) {
+    var q = encodeURIComponent("'" + folderId + "' in parents and mimeType='application/epub+zip' and trashed=false");
+    var url = 'https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id,name,modifiedTime)&pageSize=200';
+    return driveFetch(url).then(function (res) { return res.json(); }).then(function (data) { return data.files || []; });
+  }
+
+  function downloadDriveFile(fileId) {
+    var url = 'https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media';
+    return driveFetch(url).then(function (res) { return res.arrayBuffer(); });
+  }
+
+  // ---- Progress file (small JSON, lives in the same Drive folder) ----
+  function findOrCreateProgressFile(folderId) {
+    if (driveProgressFileId) return Promise.resolve(driveProgressFileId);
+    var q = encodeURIComponent("'" + folderId + "' in parents and name='" + PROGRESS_FILENAME + "' and trashed=false");
+    var url = 'https://www.googleapis.com/drive/v3/files?q=' + q + '&fields=files(id)';
+    return driveFetch(url).then(function (res) { return res.json(); }).then(function (data) {
+      if (data.files && data.files.length) {
+        driveProgressFileId = data.files[0].id;
+        localStorage.setItem('reader_drive_progress_file_id', driveProgressFileId);
+        return driveProgressFileId;
+      }
+      // create it empty
+      var metadata = { name: PROGRESS_FILENAME, parents: [folderId], mimeType: 'application/json' };
+      var boundary = 'readerbound';
+      var body = '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' +
+        JSON.stringify(metadata) + '\r\n--' + boundary + '\r\nContent-Type: application/json\r\n\r\n{}\r\n--' + boundary + '--';
+      return driveFetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+        method: 'POST',
+        headers: { 'Content-Type': 'multipart/related; boundary=' + boundary },
+        body: body
+      }).then(function (res) { return res.json(); }).then(function (created) {
+        driveProgressFileId = created.id;
+        localStorage.setItem('reader_drive_progress_file_id', driveProgressFileId);
+        return driveProgressFileId;
+      });
+    });
+  }
+
+  function downloadProgressFile(folderId) {
+    return findOrCreateProgressFile(folderId).then(function (fileId) {
+      return driveFetch('https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media')
+        .then(function (res) { return res.text(); })
+        .then(function (text) { try { return JSON.parse(text || '{}'); } catch (e) { return {}; } });
+    });
+  }
+
+  function uploadProgressFile(folderId, progressObj) {
+    return findOrCreateProgressFile(folderId).then(function (fileId) {
+      return driveFetch('https://www.googleapis.com/upload/drive/v3/files/' + fileId + '?uploadType=media', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(progressObj)
+      });
+    });
+  }
+
+  // Merge local library progress with the Drive progress file, newer lastOpened wins,
+  // then push the merged result back up. Keyed by driveId (stable across devices).
+  function mergeAndSyncProgress(folderId) {
+    return downloadProgressFile(folderId).then(function (remote) {
+      var list = loadLibraryList();
+      var changedLocal = false;
+      list.forEach(function (book) {
+        if (!book.driveId) return;
+        var r = remote[book.driveId];
+        if (r && (r.lastOpened || 0) > (book.lastOpened || 0)) {
+          book.progress = r.progress;
+          book.status = r.status;
+          book.lastOpened = r.lastOpened;
+          changedLocal = true;
+        }
+        remote[book.driveId] = {
+          progress: book.progress || 0,
+          status: book.status || 'unread',
+          lastOpened: book.lastOpened || 0
+        };
+      });
+      if (changedLocal) saveLibraryList(list);
+      return uploadProgressFile(folderId, remote).then(function () { return changedLocal; });
+    });
+  }
+
+  // ---- Bringing new/updated epubs in from Drive ----
+  function syncWithDrive() {
+    var folderId = (gdriveFolderId.value || '').trim();
+    if (!folderId) { showToast('Add your Drive folder ID first.'); return; }
+    if (!accessToken) { driveSignIn(); return; }
+    if (typeof JSZip === 'undefined') { showToast('EPUB support failed to load — check your connection.'); return; }
+
+    setDriveStatus('syncing', 'Syncing…');
+    listDriveEpubs(folderId).then(function (files) {
+      var list = loadLibraryList();
+      var byDriveId = {};
+      list.forEach(function (b) { if (b.driveId) byDriveId[b.driveId] = b; });
+
+      var toFetch = files.filter(function (f) {
+        var existing = byDriveId[f.id];
+        return !existing || existing.driveModifiedTime !== f.modifiedTime;
+      });
+
+      var added = 0, updated = 0, failed = 0;
+      return toFetch.reduce(function (chain, f) {
+        return chain.then(function () {
+          showToast('Syncing ' + f.name + '…');
+          return downloadDriveFile(f.id).then(function (buf) {
+            return parseEpub(buf, f.name).then(function (book) {
+              book.driveId = f.id;
+              book.driveModifiedTime = f.modifiedTime;
+              var freshList = loadLibraryList();
+              var idx = freshList.findIndex(function (b) { return b.driveId === f.id; });
+              if (idx >= 0) {
+                // keep local reading progress, refresh content/cover only
+                book.progress = freshList[idx].progress;
+                book.status = freshList[idx].status;
+                book.lastOpened = freshList[idx].lastOpened;
+                book.id = freshList[idx].id;
+                freshList[idx] = book;
+                updated++;
+              } else {
+                freshList.push(book);
+                added++;
+              }
+              if (!saveLibraryList(freshList)) { failed++; showToast('"' + book.title + '" is too large to save locally.'); }
+            });
+          }).catch(function (err) {
+            console.error(err); failed++;
+            showToast('Could not sync ' + f.name + ' — ' + (err && err.message ? err.message : 'unknown error'));
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        return mergeAndSyncProgress(folderId);
+      }).then(function () {
+        setDriveStatus('online', 'Connected to Drive');
+        document.body.classList.contains('library-open') && renderLibrary();
+        if (added || updated) {
+          showToast('Synced: ' + added + ' added, ' + updated + ' updated.');
+        } else {
+          showToast('Drive library is up to date.');
+        }
+      });
+    }).catch(function (err) {
+      console.error(err);
+      setDriveStatus('offline', 'Sync failed');
+      showToast(err && err.message ? err.message : 'Drive sync failed.');
+    });
   }
 </script>
-<button onclick="signIn()">Sign in with Google</button>
 </body>
 </html>
