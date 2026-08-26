@@ -1,0 +1,5719 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Reader — Minimal eBook Reader</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+* {
+    box-sizing: border-box
+}
+
+:root {
+    --paper: #E9E1CB;
+    --ink: #2A2419;
+    --ink-rgb: 42, 36, 25;
+    --ink-soft: #4A4230;
+    --ink-quiet: #8B8066;
+    --ink-hover: #3D362A;
+    --hairline: #D9CFB4;
+    --panel-shadow: rgba(42, 36, 25, 0.14);
+    --scrim: rgba(42, 36, 25, 0.22);
+    --search-highlight: #F5E6A3;
+    --search-current: #E8C84A;
+    --margin: 10%;
+    --text-scale: 1;
+    --line-height: 1.8;
+    --text-indent: 24px;
+    --body-font: "Newsreader", Georgia, serif;
+    --title-font: "Newsreader", Georgia, serif;
+    --author-font: "Newsreader", Georgia, serif;
+    --read-progress: 0%
+}
+
+html {
+    scrollbar-width: none;
+    scrollbar-color: transparent transparent
+}
+
+html::-webkit-scrollbar {
+    display: none
+}
+
+.custom-scrollbar-track {
+    position: fixed;
+    top: 0;
+    right: 2px;
+    width: 10px;
+    height: 100%;
+    z-index: 25;
+    pointer-events: none
+}
+
+.custom-scrollbar-thumb {
+    position: absolute;
+    right: 0;
+    width: 8px;
+    border-radius: 6px;
+    background: var(--ink);
+    opacity: 0;
+    transition: opacity .25s ease;
+    pointer-events: auto;
+    cursor: pointer
+}
+
+.custom-scrollbar-thumb.is-visible {
+    opacity: .45
+}
+
+.custom-scrollbar-thumb.is-dragging,
+.custom-scrollbar-thumb:hover {
+    opacity: .85
+}
+
+body[data-theme=custom] {
+    --ink-soft: var(--custom-ink-soft, #4A4230);
+    --ink-quiet: var(--custom-ink-quiet, #8B8066);
+    --ink-hover: var(--custom-ink-hover, #3D362A);
+    --hairline: var(--custom-hairline, #D9CFB4);
+    --panel-shadow: var(--custom-panel-shadow, rgba(42, 36, 25, 0.14));
+    --scrim: var(--custom-scrim, rgba(42, 36, 25, 0.22));
+    --paper: var(--custom-paper, #E9E1CB);
+    --ink: var(--custom-ink, #2A2419);
+    --ink-rgb: var(--custom-ink-rgb, 42, 36, 25)
+}
+
+body[data-theme=saved-0] {
+    --ink-soft: var(--theme-0-ink-soft, #4A4230);
+    --ink-quiet: var(--theme-0-ink-quiet, #8B8066);
+    --ink-hover: var(--theme-0-ink-hover, #3D362A);
+    --hairline: var(--theme-0-hairline, #D9CFB4);
+    --panel-shadow: var(--theme-0-panel-shadow, rgba(42, 36, 25, 0.14));
+    --scrim: var(--theme-0-scrim, rgba(42, 36, 25, 0.22));
+    --paper: var(--theme-0-paper, #E9E1CB);
+    --ink: var(--theme-0-ink, #2A2419);
+    --ink-rgb: var(--theme-0-ink-rgb, 42, 36, 25)
+}
+
+body[data-theme=saved-1] {
+    --ink-soft: var(--theme-1-ink-soft, #4A4230);
+    --ink-quiet: var(--theme-1-ink-quiet, #8B8066);
+    --ink-hover: var(--theme-1-ink-hover, #3D362A);
+    --hairline: var(--theme-1-hairline, #D9CFB4);
+    --panel-shadow: var(--theme-1-panel-shadow, rgba(42, 36, 25, 0.14));
+    --scrim: var(--theme-1-scrim, rgba(42, 36, 25, 0.22));
+    --paper: var(--theme-1-paper, #E9E1CB);
+    --ink: var(--theme-1-ink, #2A2419);
+    --ink-rgb: var(--theme-1-ink-rgb, 42, 36, 25)
+}
+
+body[data-theme=saved-2] {
+    --ink-soft: var(--theme-2-ink-soft, #4A4230);
+    --ink-quiet: var(--theme-2-ink-quiet, #8B8066);
+    --ink-hover: var(--theme-2-ink-hover, #3D362A);
+    --hairline: var(--theme-2-hairline, #D9CFB4);
+    --panel-shadow: var(--theme-2-panel-shadow, rgba(42, 36, 25, 0.14));
+    --scrim: var(--theme-2-scrim, rgba(42, 36, 25, 0.22));
+    --paper: var(--theme-2-paper, #E9E1CB);
+    --ink: var(--theme-2-ink, #2A2419);
+    --ink-rgb: var(--theme-2-ink-rgb, 42, 36, 25)
+}
+
+body[data-theme=saved-3] {
+    --ink-soft: var(--theme-3-ink-soft, #4A4230);
+    --ink-quiet: var(--theme-3-ink-quiet, #8B8066);
+    --ink-hover: var(--theme-3-ink-hover, #3D362A);
+    --hairline: var(--theme-3-hairline, #D9CFB4);
+    --panel-shadow: var(--theme-3-panel-shadow, rgba(42, 36, 25, 0.14));
+    --scrim: var(--theme-3-scrim, rgba(42, 36, 25, 0.22));
+    --paper: var(--theme-3-paper, #E9E1CB);
+    --ink: var(--theme-3-ink, #2A2419);
+    --ink-rgb: var(--theme-3-ink-rgb, 42, 36, 25)
+}
+
+body[data-theme=saved-4] {
+    --ink-soft: var(--theme-4-ink-soft, #4A4230);
+    --ink-quiet: var(--theme-4-ink-quiet, #8B8066);
+    --ink-hover: var(--theme-4-ink-hover, #3D362A);
+    --hairline: var(--theme-4-hairline, #D9CFB4);
+    --panel-shadow: var(--theme-4-panel-shadow, rgba(42, 36, 25, 0.14));
+    --scrim: var(--theme-4-scrim, rgba(42, 36, 25, 0.22));
+    --paper: var(--theme-4-paper, #E9E1CB);
+    --ink: var(--theme-4-ink, #2A2419);
+    --ink-rgb: var(--theme-4-ink-rgb, 42, 36, 25)
+}
+
+body[data-theme=saved-5] {
+    --ink-soft: var(--theme-5-ink-soft, #4A4230);
+    --ink-quiet: var(--theme-5-ink-quiet, #8B8066);
+    --ink-hover: var(--theme-5-ink-hover, #3D362A);
+    --hairline: var(--theme-5-hairline, #D9CFB4);
+    --panel-shadow: var(--theme-5-panel-shadow, rgba(42, 36, 25, 0.14));
+    --scrim: var(--theme-5-scrim, rgba(42, 36, 25, 0.22));
+    --paper: var(--theme-5-paper, #E9E1CB);
+    --ink: var(--theme-5-ink, #2A2419);
+    --ink-rgb: var(--theme-5-ink-rgb, 42, 36, 25)
+}
+
+* {
+    box-sizing: border-box
+}
+
+body,
+html {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink)
+}
+
+body {
+    font-family: var(--body-font);
+    min-height: 100vh;
+    background: var(--paper);
+    transition: background .35s ease, color .35s ease;
+    background-size: var(--bg-size, auto);
+    background-position: center;
+    background-attachment: fixed
+}
+
+.book-title {
+    font-family: var(--title-font)
+}
+
+.book-author {
+    font-family: var(--author-font)
+}
+
+body[data-body-font=custom] {
+    --body-font: var(--custom-font-name, serif)
+}
+
+body.has-custom-bg {
+    background-image: var(--custom-bg-url, none) !important
+}
+
+a,
+a:visited {
+    color: var(--ink);
+    text-decoration: none
+}
+
+a:hover {
+    color: var(--ink-hover);
+    text-decoration: underline
+}
+
+::selection {
+    background-color: var(--ink);
+    color: var(--paper)
+}
+
+.hover-zone {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    z-index: 20
+}
+
+.toolbar-fade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 140px;
+    background: linear-gradient(to bottom, var(--paper) 0, var(--paper) 30%, transparent 100%);
+    opacity: 0;
+    transition: opacity .4s ease, background .35s ease;
+    pointer-events: none
+}
+
+.hover-zone:hover .toolbar-fade,
+.toolbar-fade.is-visible,
+.toolbar.is-visible~.toolbar-fade {
+    opacity: 1
+}
+
+.toolbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 22px 24px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .4s ease, transform .4s ease;
+    pointer-events: none
+}
+
+.hover-zone:hover .toolbar,
+.toolbar.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto
+}
+
+@media (min-width:700px) {
+    .toolbar {
+        padding: 26px 10%
+    }
+}
+
+.toolbar-group {
+    display: flex;
+    gap: 6px
+}
+
+.icon-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-quiet);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color .2s ease, transform .2s ease, background .2s ease;
+    opacity: 0;
+    transform: translateY(-4px);
+    position: relative
+}
+
+.hover-zone:hover .icon-btn,
+.toolbar.is-visible .icon-btn {
+    opacity: 1;
+    transform: translateY(0)
+}
+
+.icon-btn:focus-visible,
+.icon-btn:hover {
+    color: var(--ink-hover);
+    background: rgba(var(--ink-rgb), .08);
+    transform: translateY(0) scale(1.04)
+}
+
+.icon-btn:focus-visible {
+    outline: 2px solid var(--ink-soft);
+    outline-offset: 2px
+}
+
+.icon-btn.is-active {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .08)
+}
+
+.icon-btn svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor
+}
+
+.search-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s ease;
+    z-index: 34
+}
+
+.search-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto
+}
+
+.search-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 480px;
+    max-width: 92vw;
+    background: var(--paper);
+    border-left: 1px solid var(--hairline);
+    box-shadow: none;
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1), background .35s ease, border-color .35s ease, box-shadow .35s ease;
+    z-index: 35;
+    display: flex;
+    flex-direction: column
+}
+
+.search-panel.is-open {
+    transform: translateX(0);
+    box-shadow: -10px 0 28px var(--panel-shadow)
+}
+
+.search-header {
+    padding: 20px 24px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--hairline);
+    flex-shrink: 0
+}
+
+.search-header input {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: system-ui, sans-serif;
+    font-size: .9rem;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    transition: border-color .2s ease
+}
+
+.search-header input:focus {
+    outline: 0;
+    border-color: var(--ink)
+}
+
+.search-header .search-count {
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    color: var(--ink-quiet);
+    flex-shrink: 0;
+    min-width: 60px;
+    text-align: center
+}
+
+.search-header .search-close {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    color: var(--ink-quiet);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color .2s ease, background .2s ease;
+    flex-shrink: 0
+}
+
+.search-header .search-close:hover {
+    color: var(--ink-hover);
+    background: rgba(var(--ink-rgb), .08)
+}
+
+.search-results {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 16px 30px
+}
+
+.search-result-item {
+    padding: 12px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .2s ease;
+    border-bottom: 1px solid var(--hairline)
+}
+
+.search-result-item:last-child {
+    border-bottom: none
+}
+
+.search-result-item:hover {
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.search-result-chapter {
+    font-family: system-ui, sans-serif;
+    font-size: .72rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 4px
+}
+
+.search-result-snippet {
+    font-size: .92rem;
+    line-height: 1.5;
+    color: var(--ink-soft)
+}
+
+.search-result-snippet em {
+    font-style: normal;
+    background: var(--search-highlight);
+    padding: 0 2px;
+    border-radius: 2px
+}
+
+.search-empty {
+    padding: 40px 20px;
+    text-align: center;
+    font-family: system-ui, sans-serif;
+    font-size: .9rem;
+    color: var(--ink-quiet)
+}
+
+.flash-highlight {
+    background: #ff6b35 !important;
+    color: #fff !important;
+    border-radius: 2px;
+    padding: 0 2px;
+    transition: background .5s ease, color .5s ease
+}
+
+.book-info-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color .2s ease, background .2s ease
+}
+
+.book-info-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor
+}
+
+.sidebar-book-info-btn {
+    position: absolute;
+    top: 22px;
+    right: 18px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: var(--ink-quiet)
+}
+
+.sidebar-book-info-btn:focus-visible,
+.sidebar-book-info-btn:hover {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .08)
+}
+
+.library-tile-info-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: rgba(233, 225, 203, .92);
+    background: rgba(0, 0, 0, .28);
+    opacity: 0;
+    transition: opacity .2s ease, background .2s ease
+}
+
+.library-tile-info-btn:focus-visible,
+.library-tile:hover .library-tile-info-btn {
+    opacity: 1
+}
+
+.library-tile-info-btn:focus-visible,
+.library-tile-info-btn:hover {
+    background: rgba(0, 0, 0, .46)
+}
+
+.book-info-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+    z-index: 50
+}
+
+.book-info-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto
+}
+
+.book-info-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%) scale(.97);
+    width: 420px;
+    max-width: 88vw;
+    max-height: 82vh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    background: var(--paper);
+    border-radius: 10px;
+    box-shadow: 0 20px 60px var(--panel-shadow);
+    padding: 34px 30px 28px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, transform .3s ease, background .35s ease;
+    z-index: 51
+}
+
+.book-info-modal::-webkit-scrollbar {
+    display: none
+}
+
+.book-info-modal.is-open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto
+}
+
+.book-info-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    appearance: none;
+    border: none;
+    background: 0 0;
+    color: var(--ink-quiet);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    transition: color .2s ease, background .2s ease
+}
+
+.book-info-close:focus-visible,
+.book-info-close:hover {
+    color: var(--ink-hover);
+    background: rgba(var(--ink-rgb), .08)
+}
+
+.book-info-cover-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 14px
+}
+
+.book-info-cover {
+    appearance: none;
+    border: none;
+    padding: 0;
+    width: 96px;
+    height: 144px;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(155deg, #4a4230, #7a6947);
+    box-shadow: 0 4px 14px var(--panel-shadow);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative
+}
+
+.book-info-cover:focus-visible {
+    outline: 2px solid var(--ink-quiet);
+    outline-offset: 2px
+}
+
+.book-info-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block
+}
+
+.book-info-cover img[hidden] {
+    display: none
+}
+
+.book-info-cover-placeholder {
+    font-family: system-ui, sans-serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    color: rgba(233, 225, 203, .75)
+}
+
+.book-info-cover::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0);
+    transition: background .2s ease
+}
+
+.book-info-cover:hover::after {
+    background: rgba(0, 0, 0, .18)
+}
+
+.book-info-cover-actions {
+    display: flex;
+    gap: 10px
+}
+
+.book-info-cover-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    font-family: system-ui, sans-serif;
+    font-size: .74rem;
+    letter-spacing: .02em;
+    color: var(--ink-quiet);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    padding: 2px 4px
+}
+
+.book-info-cover-btn:hover {
+    color: var(--ink-hover)
+}
+
+.book-info-title {
+    font-family: var(--title-font);
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--ink);
+    margin: 0 0 6px 0
+}
+
+.book-info-author {
+    font-family: var(--author-font);
+    text-align: center;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--ink-soft);
+    margin: 0
+}
+
+.book-info-date {
+    font-family: system-ui, sans-serif;
+    text-align: center;
+    font-size: .78rem;
+    letter-spacing: .03em;
+    color: var(--ink-quiet);
+    margin: 6px 0 0 0
+}
+
+.book-info-status {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap
+}
+
+.book-info-status-label {
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    letter-spacing: .04em;
+    color: var(--ink-soft)
+}
+
+.book-info-status-options {
+    display: flex;
+    gap: 6px
+}
+
+.book-info-status-btn {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: 0 0;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: system-ui, sans-serif;
+    font-size: .72rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: color .2s ease, background .2s ease, border-color .2s ease
+}
+
+.book-info-status-btn:hover {
+    color: var(--ink-hover);
+    background: rgba(var(--ink-rgb), .05);
+    border-color: var(--ink-quiet)
+}
+
+.book-info-status-btn.is-active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink)
+}
+
+.book-info-fetch {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px
+}
+
+.book-info-fetch-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    letter-spacing: .02em;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-bottom: 1px solid var(--hairline);
+    padding: 0 0 1px;
+    transition: color .2s ease, border-color .2s ease
+}
+
+.book-info-fetch-btn:focus-visible,
+.book-info-fetch-btn:hover {
+    color: var(--ink-hover);
+    border-color: var(--ink-soft)
+}
+
+.book-info-fetch-btn:disabled {
+    color: var(--ink-quiet);
+    border-color: var(--hairline);
+    cursor: default
+}
+
+.book-info-divider {
+    height: 1px;
+    background: var(--hairline);
+    margin: 22px 0 20px;
+    transition: background .35s ease
+}
+
+.book-info-desc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px
+}
+
+.book-info-desc-label {
+    font-family: system-ui, sans-serif;
+    font-size: .72rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-quiet)
+}
+
+.book-info-desc-edit-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 2px 4px;
+    transition: color .2s ease
+}
+
+.book-info-desc-edit-btn:focus-visible,
+.book-info-desc-edit-btn:hover {
+    color: var(--ink-hover);
+    text-decoration: underline
+}
+
+.book-info-desc-text {
+    font-size: .92rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    margin: 0
+}
+
+.book-info-desc-text p {
+    margin: 0 0 .8em
+}
+
+.book-info-desc-text p:last-child {
+    margin-bottom: 0
+}
+
+.book-info-desc-text.is-empty {
+    color: var(--ink-quiet);
+    font-style: italic
+}
+
+.book-info-desc-edit textarea {
+    width: 100%;
+    resize: vertical;
+    min-height: 96px;
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: inherit;
+    font-size: .92rem;
+    line-height: 1.6;
+    color: var(--ink);
+    transition: border-color .2s ease
+}
+
+.book-info-desc-edit textarea:focus {
+    outline: 0;
+    border-color: var(--ink)
+}
+
+.book-info-desc-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 10px
+}
+
+.book-info-desc-cancel,
+.book-info-desc-save {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    font-family: system-ui, sans-serif;
+    font-size: .82rem;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 5px;
+    transition: color .2s ease, background .2s ease
+}
+
+.book-info-desc-cancel {
+    color: var(--ink-quiet)
+}
+
+.book-info-desc-cancel:focus-visible,
+.book-info-desc-cancel:hover {
+    color: var(--ink-hover);
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.book-info-desc-save {
+    color: var(--paper);
+    background: var(--ink)
+}
+
+.book-info-desc-save:focus-visible,
+.book-info-desc-save:hover {
+    background: var(--ink-hover)
+}
+
+.book-info-danger {
+    display: flex;
+    justify-content: center;
+    margin-top: 4px
+}
+
+.book-info-delete-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    letter-spacing: .02em;
+    color: #a23b2e;
+    cursor: pointer;
+    border-bottom: 1px solid transparent;
+    padding: 0 0 1px;
+    transition: color .2s ease, border-color .2s ease
+}
+
+.book-info-delete-btn:focus-visible,
+.book-info-delete-btn:hover {
+    color: #7e2c22;
+    border-color: #a23b2e
+}
+
+.sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .35s ease;
+    z-index: 29
+}
+
+.sidebar-backdrop.is-open {
+    opacity: 1;
+    pointer-events: auto
+}
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 320px;
+    max-width: 84vw;
+    background: var(--paper);
+    border-right: 1px solid var(--hairline);
+    box-shadow: none;
+    transform: translateX(-100%);
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1), background .35s ease, border-color .35s ease, box-shadow .35s ease;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto
+}
+
+.sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 10px 0 28px var(--panel-shadow)
+}
+
+.sidebar-book {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 30px 22px 22px;
+    cursor: pointer;
+    transition: background .2s ease;
+    border-radius: 0 0 6px 6px;
+    position: relative
+}
+
+.sidebar-book:hover {
+    background: rgba(var(--ink-rgb), .04)
+}
+
+.sidebar-cover {
+    width: 56px;
+    height: 84px;
+    flex-shrink: 0;
+    border-radius: 2px;
+    background: linear-gradient(155deg, #4a4230, #7a6947);
+    box-shadow: 0 2px 8px rgba(var(--ink-rgb), .2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden
+}
+
+.sidebar-cover span {
+    font-family: Newsreader, Georgia, serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: rgba(233, 225, 203, .85);
+    position: relative;
+    z-index: 1
+}
+
+.sidebar-book-info {
+    flex: 1;
+    min-width: 0;
+    padding-top: 2px
+}
+
+.sidebar-book-title {
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--ink);
+    margin: 0 0 4px 0
+}
+
+.sidebar-book-author {
+    font-style: italic;
+    font-size: .85rem;
+    line-height: 1.4;
+    color: var(--ink-quiet);
+    margin: 0
+}
+
+.sidebar-book-progress {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--ink-quiet);
+    margin-top: 6px
+}
+
+.sidebar-hairline {
+    height: 1px;
+    background: var(--hairline);
+    margin: 0 22px;
+    transition: background .35s ease
+}
+
+.sidebar-label-row {
+    display: flex;
+    align-items: center
+}
+
+.sidebar-label-toggle {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: color .2s ease;
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+    padding: 18px 22px 8px
+}
+
+.sidebar-label-toggle:hover {
+    color: var(--ink-hover)
+}
+
+.sidebar-label-toggle[aria-expanded=true] #sidebarLabelArrow {
+    transform: rotate(180deg)
+}
+
+.sidebar-label-toggle .label-text {
+    font-family: system-ui, sans-serif
+}
+
+.sidebar-contents {
+    list-style: none;
+    margin: 0;
+    padding: 0 10px 20px
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 11px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    font-size: .98rem;
+    transition: background .2s ease, color .2s ease;
+    background: 0 0;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: Newsreader, Georgia, serif
+}
+
+.sidebar-item:focus-visible,
+.sidebar-item:hover {
+    background: rgba(var(--ink-rgb), .06);
+    color: var(--ink-hover);
+    outline: 0
+}
+
+.sidebar-item-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.sidebar-item-title-input {
+    width: 100%;
+    appearance: none;
+    border: none;
+    background: rgba(var(--ink-rgb), .06);
+    font: inherit;
+    color: var(--ink);
+    padding: 1px 4px;
+    margin: -1px -4px;
+    border-radius: 4px;
+    outline: 0
+}
+
+.sidebar-item.is-renaming {
+    cursor: default
+}
+
+.sidebar-item.is-current {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.sidebar-item.is-current .sidebar-item-title::before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ink);
+    margin-right: 8px
+}
+
+.sidebar-item-meta {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: .02em;
+    color: var(--ink-quiet);
+    flex-shrink: 0
+}
+
+.sidebar-item.is-current .sidebar-item-meta {
+    color: var(--ink)
+}
+
+.sidebar-item[data-section=media] {
+    font-family: system-ui, sans-serif;
+    font-size: .82rem;
+    letter-spacing: .04em;
+    text-transform: uppercase
+}
+
+.chapter-body figure,
+.chapter-body img,
+.chapter-body picture {
+    display: none !important
+}
+
+.sidebar-media-empty {
+    padding: 10px 22px 24px;
+    color: var(--ink-quiet);
+    font-size: .92rem;
+    font-style: italic
+}
+
+.sidebar-media-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 6px 20px 20px
+}
+
+.sidebar-media-tile {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: left
+}
+
+.sidebar-media-thumb {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4/3;
+    border-radius: 4px;
+    background: linear-gradient(155deg, #4a4230, #7a6947);
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 2px 6px rgba(var(--ink-rgb), .2);
+    transition: transform .2s ease, box-shadow .2s ease
+}
+
+.sidebar-media-tile:focus-visible .sidebar-media-thumb,
+.sidebar-media-tile:hover .sidebar-media-thumb {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(var(--ink-rgb), .28)
+}
+
+.sidebar-media-caption {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    color: var(--ink-quiet);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap
+}
+
+.media-lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 60
+}
+
+.media-lightbox-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto
+}
+
+.media-lightbox {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6vh 6vw;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease;
+    z-index: 61
+}
+
+.media-lightbox.is-open {
+    opacity: 1;
+    pointer-events: auto
+}
+
+.media-lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 6px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+    cursor: zoom-out
+}
+
+.settings-panel {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    width: 460px;
+    max-width: 92vw;
+    background: var(--paper);
+    border-left: 1px solid var(--hairline);
+    box-shadow: none;
+    transform: translateX(100%);
+    transition: transform .35s cubic-bezier(.4, 0, .2, 1), background .35s ease, border-color .35s ease, box-shadow .35s ease;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: none
+}
+
+.settings-panel::-webkit-scrollbar {
+    display: none
+}
+
+.settings-panel.is-open {
+    transform: translateX(0);
+    box-shadow: -10px 0 28px var(--panel-shadow)
+}
+
+.settings-header {
+    padding: 20px 24px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--hairline);
+    flex-shrink: 0
+}
+
+.settings-header h2 {
+    font-size: 1.05rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0;
+    letter-spacing: .01em
+}
+
+.settings-close {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    color: var(--ink-quiet);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: color .2s ease, background .2s ease
+}
+
+.settings-close:hover {
+    color: var(--ink-hover);
+    background: rgba(var(--ink-rgb), .08)
+}
+
+.settings-scroll {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 30px;
+    scrollbar-width: none
+}
+
+.settings-scroll::-webkit-scrollbar {
+    display: none
+}
+
+.settings-connection {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--hairline);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0
+}
+
+.settings-connection-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    color: var(--ink-soft)
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0
+}
+
+.status-dot.online {
+    background: var(--ink)
+}
+
+.status-dot.offline {
+    background: #f44336
+}
+
+.status-dot.syncing {
+    background: #ffa726;
+    animation: pulse 1.5s ease-in-out infinite
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1
+    }
+
+    50% {
+        opacity: .4
+    }
+}
+
+.settings-connection-action {
+    margin-left: auto;
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: 0 0;
+    padding: 4px 14px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .73rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, border-color .2s ease
+}
+
+.settings-connection-action:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink)
+}
+
+.settings-connection-action:disabled {
+    opacity: .5;
+    cursor: default
+}
+
+.settings-section {
+    padding: 14px 24px 16px;
+    border-bottom: 1px solid var(--hairline)
+}
+
+.settings-section:last-child {
+    border-bottom: none
+}
+
+.settings-section-label {
+    font-family: system-ui, sans-serif;
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+    margin-bottom: 12px
+}
+
+.settings-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-height: 36px
+}
+
+.settings-row+.settings-row {
+    margin-top: 6px
+}
+
+.settings-row-label {
+    font-family: system-ui, sans-serif;
+    font-size: .8rem;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    min-width: 48px
+}
+
+.settings-row-value {
+    font-family: system-ui, sans-serif;
+    font-size: .8rem;
+    color: var(--ink-quiet);
+    min-width: 26px;
+    text-align: left;
+    flex-shrink: 0
+}
+
+.settings-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex: 1;
+    justify-content: flex-end
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield
+}
+
+.settings-input {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .8rem;
+    color: var(--ink);
+    width: 56px;
+    text-align: center;
+    transition: border-color .2s ease;
+    flex-shrink: 0
+}
+
+.settings-input:focus {
+    outline: 0;
+    border-color: var(--ink)
+}
+
+.toggle-group {
+    display: flex;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--paper);
+    flex-wrap: wrap
+}
+
+.toggle-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    padding: 4px 12px;
+    font-family: system-ui, sans-serif;
+    font-size: .72rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease;
+    border-right: 1px solid var(--hairline);
+    white-space: nowrap;
+    text-align: center;
+    position: relative
+}
+
+.toggle-btn:last-child {
+    border-right: none
+}
+
+.toggle-btn:first-child {
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px
+}
+
+.toggle-btn:last-child {
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px
+}
+
+.toggle-btn:hover {
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.toggle-btn.is-selected {
+    background: var(--ink);
+    color: var(--paper)
+}
+
+.toggle-btn.is-selected:hover {
+    background: var(--ink-hover)
+}
+
+.custom-row {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    background: rgba(var(--ink-rgb), .03)
+}
+
+.custom-row.is-open {
+    display: block
+}
+
+.custom-row-label {
+    font-family: system-ui, sans-serif;
+    font-size: .68rem;
+    color: var(--ink-quiet);
+    letter-spacing: .04em;
+    margin-bottom: 6px
+}
+
+.custom-row-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap
+}
+
+.custom-row-input-group input[type=text] {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .75rem;
+    color: var(--ink);
+    flex: 1;
+    min-width: 80px;
+    transition: border-color .2s ease
+}
+
+.custom-row-input-group input[type=text]:focus {
+    outline: 0;
+    border-color: var(--ink)
+}
+
+.custom-row-input-group .file-label {
+    font-family: system-ui, sans-serif;
+    font-size: .7rem;
+    color: var(--ink-quiet);
+    cursor: pointer;
+    padding: 3px 10px;
+    border: 1px dashed var(--hairline);
+    border-radius: 4px;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+    white-space: nowrap;
+    flex-shrink: 0
+}
+
+.custom-row-input-group .file-label:hover {
+    background: rgba(var(--ink-rgb), .06);
+    color: var(--ink-hover);
+    border-color: var(--ink)
+}
+
+.custom-row-input-group input[type=file] {
+    display: none
+}
+
+.custom-row-input-group .file-status {
+    font-family: system-ui, sans-serif;
+    font-size: .68rem;
+    color: var(--ink-quiet);
+    flex-shrink: 0
+}
+
+.custom-row-input-group .file-remove {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    color: var(--ink-quiet);
+    cursor: pointer;
+    padding: 2px 5px;
+    font-size: .75rem;
+    border-radius: 4px;
+    transition: color .2s ease, background .2s ease;
+    flex-shrink: 0
+}
+
+.custom-row-input-group .file-remove:hover {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.custom-row-input-group .font-save-btn {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: 0 0;
+    padding: 4px 14px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .72rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+    flex-shrink: 0
+}
+
+.custom-row-input-group .font-save-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink)
+}
+
+.custom-row-input-group .font-save-btn:disabled {
+    opacity: .4;
+    cursor: default
+}
+
+.saved-fonts-list {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    background: rgba(var(--ink-rgb), .02)
+}
+
+.saved-fonts-label {
+    font-family: system-ui, sans-serif;
+    font-size: .68rem;
+    color: var(--ink-quiet);
+    letter-spacing: .04em;
+    margin-bottom: 4px
+}
+
+.saved-font-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .75rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .2s ease
+}
+
+.saved-font-item:hover {
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.saved-font-item .font-delete {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    color: var(--ink-quiet);
+    cursor: pointer;
+    font-size: .75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color .2s ease, background .2s ease
+}
+
+.saved-font-item .font-delete:hover {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.saved-font-item .font-apply {
+    font-family: system-ui, sans-serif;
+    font-size: .65rem;
+    color: var(--ink);
+    opacity: 0;
+    transition: opacity .2s ease
+}
+
+.saved-font-item.is-active .font-apply {
+    opacity: 1
+}
+
+.saved-font-item .font-name,
+.saved-theme-item .theme-name-text {
+    cursor: text;
+    padding: 0 2px;
+    border-radius: 2px;
+    transition: background .2s ease
+}
+
+.saved-font-item .font-name:hover,
+.saved-theme-item .theme-name-text:hover {
+    background: rgba(var(--ink-rgb), .08)
+}
+
+.saved-font-item .font-name-input,
+.saved-theme-item .theme-name-input {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    padding: 0 4px;
+    border-radius: 3px;
+    font-family: system-ui, sans-serif;
+    font-size: .75rem;
+    color: var(--ink);
+    width: 120px;
+    outline: 0
+}
+
+.saved-font-item .font-name-input:focus,
+.saved-theme-item .theme-name-input:focus {
+    border-color: var(--ink)
+}
+
+.theme-editor {
+    margin-top: 12px;
+    padding: 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    background: rgba(var(--ink-rgb), .03);
+    display: none
+}
+
+.theme-editor.is-open {
+    display: block
+}
+
+.theme-editor-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap
+}
+
+.theme-editor-row:last-child {
+    margin-bottom: 0
+}
+
+.theme-editor-row label {
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    color: var(--ink-soft);
+    min-width: 40px
+}
+
+.theme-editor-row input[type=text] {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-family: system-ui, sans-serif;
+    font-size: .82rem;
+    color: var(--ink);
+    width: 100px;
+    text-align: left;
+    transition: border-color .2s ease;
+    flex-shrink: 0
+}
+
+.theme-editor-row input[type=text]:focus {
+    outline: 0;
+    border-color: var(--ink)
+}
+
+.theme-editor-preview {
+    margin-top: 10px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: .85rem;
+    font-style: italic;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--hairline);
+    transition: background .3s ease, color .3s ease
+}
+
+.theme-editor .theme-save-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center
+}
+
+.theme-editor .theme-save-row input[type=text] {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .75rem;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    transition: border-color .2s ease
+}
+
+.theme-editor .theme-save-row input[type=text]:focus {
+    outline: 0;
+    border-color: var(--ink)
+}
+
+.theme-editor .theme-save-btn {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: 0 0;
+    padding: 5px 18px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .75rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, border-color .2s ease;
+    flex-shrink: 0
+}
+
+.theme-editor .theme-save-btn:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink)
+}
+
+.theme-editor .theme-save-btn:disabled {
+    opacity: .4;
+    cursor: default
+}
+
+.theme-editor .saved-themes {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border: 1px solid var(--hairline);
+    border-radius: 4px;
+    background: rgba(var(--ink-rgb), .02)
+}
+
+.theme-editor .saved-themes-label {
+    font-family: system-ui, sans-serif;
+    font-size: .68rem;
+    color: var(--ink-quiet);
+    letter-spacing: .04em;
+    margin-bottom: 4px
+}
+
+.saved-theme-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 6px;
+    border-radius: 4px;
+    font-family: system-ui, sans-serif;
+    font-size: .75rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .2s ease
+}
+
+.saved-theme-item:hover {
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.saved-theme-item .theme-delete {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    color: var(--ink-quiet);
+    cursor: pointer;
+    font-size: .75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: color .2s ease, background .2s ease
+}
+
+.saved-theme-item .theme-delete:hover {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.page {
+    padding: 0 24px;
+    max-width: 100%
+}
+
+@media (min-width:700px) {
+    .page {
+        padding: 0 calc(10% + var(--margin))
+    }
+}
+
+main {
+    padding-top: 2rem;
+    padding-bottom: 2rem
+}
+
+.chapter-page[hidden] {
+    display: none
+}
+
+.chapter-head {
+    text-align: center;
+    margin: 0 0 3.2rem 0
+}
+
+.chapter-page:not(:first-of-type) .chapter-head {
+    padding-top: 6vh
+}
+
+.chapter-byline {
+    margin-bottom: .6rem
+}
+
+.chapter-byline .cb-title {
+    font-family: var(--title-font);
+    font-size: 2.6rem;
+    font-weight: 500;
+    letter-spacing: .01em;
+    color: var(--ink);
+    display: block
+}
+
+.chapter-byline .cb-by {
+    font-family: var(--author-font);
+    font-style: italic;
+    font-size: 1rem;
+    letter-spacing: .03em;
+    color: var(--ink);
+    display: block;
+    margin-top: .1rem
+}
+
+.chapter-divider {
+    text-align: center;
+    font-weight: 500;
+    font-size: 1.3rem;
+    letter-spacing: .02em;
+    color: var(--ink);
+    margin: 0;
+    margin-top: 2.4rem
+}
+
+.chapter-meta {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    letter-spacing: .04em;
+    color: var(--ink);
+    margin: .7rem 0 0 0;
+    text-align: center;
+    transition: color .35s ease
+}
+
+.chapter-head--no-divider .chapter-meta {
+    margin-top: .9rem
+}
+
+.chapter-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-top: 10vh;
+    padding-top: 4vh;
+    border-top: 1px solid var(--hairline);
+    transition: border-color .35s ease
+}
+
+.chapter-nav-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    font-family: system-ui, sans-serif;
+    font-size: .85rem;
+    letter-spacing: .02em;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 8px 12px;
+    transition: color .2s ease, background .2s ease;
+    border-radius: 4px
+}
+
+.chapter-nav-btn:focus-visible,
+.chapter-nav-btn:hover {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .04)
+}
+
+.chapter-nav-spacer {
+    flex: 1
+}
+
+p {
+    font-size: calc(1.18em * var(--text-scale));
+    line-height: var(--line-height);
+    margin: 0;
+    color: var(--ink);
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    -ms-hyphens: auto
+}
+
+.chapter-body p+p {
+    text-indent: var(--text-indent)
+}
+
+.book-end {
+    text-align: center;
+    padding: 10vh 0 4vh
+}
+
+.book-end-mark {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--ink-quiet);
+    margin: 0 auto 1.6rem
+}
+
+.book-end-text {
+    font-family: system-ui, sans-serif;
+    font-size: .8rem;
+    letter-spacing: .04em;
+    color: var(--ink-quiet)
+}
+
+.touch-hint {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: .04em;
+    color: var(--ink-quiet);
+    opacity: 0;
+    transition: opacity .5s ease;
+    pointer-events: none;
+    z-index: 21
+}
+
+.touch-hint.show {
+    opacity: .7
+}
+
+.library-view {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    z-index: 40;
+    flex-direction: column;
+    transition: background .35s ease
+}
+
+body.library-open .library-view {
+    display: flex
+}
+
+body.library-open .hover-zone,
+body.library-open .page,
+body.library-open .touch-hint {
+    display: none
+}
+
+.library-header {
+    flex-shrink: 0;
+    padding: 16px 24px 12px;
+    border-bottom: 1px solid var(--hairline);
+    transition: transform .3s ease, border-color .35s ease, padding .3s ease;
+    background: var(--paper);
+    z-index: 10;
+    position: sticky;
+    top: 0
+}
+
+.library-header.is-hidden {
+    transform: translateY(-100%)
+}
+
+@media (min-width:700px) {
+    .library-header {
+        padding: 20px 10% 16px
+    }
+}
+
+.library-label {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-quiet);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px
+}
+
+.library-back-btn {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    color: var(--ink-quiet);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color .2s ease
+}
+
+.library-back-btn:hover,
+.library-back-btn:focus-visible {
+    color: var(--ink-hover);
+    outline: 0
+}
+
+.library-back-btn[hidden] {
+    display: none
+}
+
+.library-back-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round
+}
+
+.library-label-text.is-editable {
+    cursor: text;
+    border-bottom: 1px dashed transparent
+}
+
+.library-label-text.is-editable:hover {
+    border-bottom-color: var(--ink-quiet)
+}
+
+.library-label-input {
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink);
+    background: 0 0;
+    border: none;
+    border-bottom: 1px solid var(--ink);
+    padding: 0 0 1px;
+    outline: 0;
+    min-width: 60px
+}
+
+.library-searchbar {
+    display: flex;
+    align-items: center;
+    gap: 8px
+}
+
+.library-search-input {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-family: system-ui, sans-serif;
+    font-size: .9rem;
+    color: var(--ink);
+    flex: 1;
+    min-width: 0;
+    transition: border-color .2s ease
+}
+
+.library-search-input::placeholder {
+    color: var(--ink-quiet)
+}
+
+.library-search-input:focus {
+    outline: 0;
+    border-color: var(--ink)
+}
+
+.library-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0
+}
+
+.library-btn {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: 0 0;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: color .2s ease, background .2s ease, border-color .2s ease;
+    position: relative
+}
+
+.library-btn:focus-visible,
+.library-btn:hover {
+    color: var(--ink-hover);
+    background: rgba(var(--ink-rgb), .06);
+    outline: 0
+}
+
+.library-btn svg {
+    width: 16px;
+    height: 16px;
+    fill: currentColor
+}
+
+.library-btn.is-active {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .08);
+    border-color: var(--ink)
+}
+
+.sort-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--paper);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px var(--panel-shadow);
+    padding: 6px 0;
+    min-width: 160px;
+    display: none;
+    z-index: 20
+}
+
+.sort-dropdown.is-open {
+    display: block
+}
+
+.sort-dropdown button {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    width: 100%;
+    padding: 8px 16px;
+    font-family: system-ui, sans-serif;
+    font-size: .82rem;
+    text-align: left;
+    color: var(--ink-soft);
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease
+}
+
+.sort-dropdown button:focus-visible,
+.sort-dropdown button:hover {
+    background: rgba(var(--ink-rgb), .06);
+    color: var(--ink-hover)
+}
+
+.sort-dropdown button.is-active {
+    color: var(--ink);
+    background: rgba(var(--ink-rgb), .06)
+}
+
+.library-shelf {
+    margin-bottom: 28px
+}
+
+.library-shelf-row-wrap {
+    position: relative
+}
+
+.library-shelf-row {
+    display: flex;
+    gap: 28px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    padding: 4px 6px 10px
+}
+
+.library-shelf-row::-webkit-scrollbar {
+    display: none
+}
+
+.shelf-arrow {
+    position: absolute;
+    top: 38%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 14px var(--panel-shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, color .2s ease;
+    z-index: 5
+}
+
+.library-shelf-row-wrap:hover .shelf-arrow.is-visible {
+    opacity: 1;
+    pointer-events: auto
+}
+
+.shelf-arrow.shelf-arrow-left {
+    left: -14px
+}
+
+.shelf-arrow.shelf-arrow-right {
+    right: -14px
+}
+
+.shelf-arrow svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round
+}
+
+.shelf-arrow:hover {
+    color: var(--ink-hover)
+}
+
+.group-tile {
+    flex-shrink: 0;
+    width: 150px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent
+}
+
+.group-tile-stack {
+    position: relative;
+    aspect-ratio: 2/3;
+    margin-bottom: 10px
+}
+
+.group-tile-card {
+    position: absolute;
+    inset: 0;
+    border-radius: 10px;
+    background: var(--hairline);
+    box-shadow: 0 2px 6px rgba(var(--ink-rgb), .1);
+    transition: transform .25s ease, box-shadow .25s ease
+}
+
+.group-tile-card.layer-1 {
+    transform: rotate(5deg) translate(5px, 1px);
+    z-index: 2
+}
+
+.group-tile-card.layer-0 {
+    z-index: 3;
+    overflow: hidden;
+    box-shadow: 0 4px 14px rgba(var(--ink-rgb), .16)
+}
+
+.group-tile-card.layer-0 img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block
+}
+
+.group-tile-card .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(155deg, #4a4230, #7a6947);
+    font-family: Newsreader, Georgia, serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: rgba(233, 225, 203, .7)
+}
+
+.group-tile-count {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: rgba(42, 36, 25, .75);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    font-family: system-ui, sans-serif;
+    font-size: 9px;
+    letter-spacing: .04em;
+    padding: 2px 7px;
+    border-radius: 10px;
+    z-index: 4
+}
+
+.group-tile:hover .layer-1 {
+    transform: rotate(9deg) translate(9px, 2px)
+}
+
+.group-tile:hover .layer-0 {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(var(--ink-rgb), .22)
+}
+
+.group-tile-label {
+    font-family: system-ui, sans-serif;
+    font-size: .84rem;
+    color: var(--ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+
+.group-tile-sub {
+    font-family: system-ui, sans-serif;
+    font-size: .74rem;
+    color: var(--ink-quiet);
+    margin-top: 1px
+}
+
+@media (max-width:700px) {
+    .group-tile {
+        width: 112px
+    }
+    .library-shelf-row {
+        gap: 16px
+    }
+}
+
+.library-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px 40px
+}
+
+@media (min-width:700px) {
+    .library-body {
+        padding: 24px 10% 40px
+    }
+}
+
+.library-empty {
+    text-align: center;
+    font-family: system-ui, sans-serif;
+    font-size: .9rem;
+    color: var(--ink-quiet);
+    letter-spacing: .02em;
+    padding: 60px 0
+}
+
+.library-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 20px 16px
+}
+
+.library-tile {
+    position: relative;
+    aspect-ratio: 2/3;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--hairline);
+    box-shadow: 0 2px 8px rgba(var(--ink-rgb), .06);
+    transition: box-shadow .2s ease;
+    cursor: pointer
+}
+
+.library-tile:hover {
+    box-shadow: 0 8px 24px rgba(var(--ink-rgb), .15)
+}
+
+.library-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block
+}
+
+.library-tile .placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(155deg, #4a4230, #7a6947);
+    font-family: Newsreader, Georgia, serif;
+    font-style: italic;
+    font-size: 2rem;
+    color: rgba(233, 225, 203, .7)
+}
+
+.library-tile .status-badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: rgba(42, 36, 25, .75);
+    backdrop-filter: blur(4px);
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-family: system-ui, sans-serif;
+    font-size: 9px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #fff;
+    pointer-events: none
+}
+
+.library-tile .status-badge-complete {
+    background: rgba(74, 92, 66, .82)
+}
+
+.library-tile .cover-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: rgba(0, 0, 0, .25)
+}
+
+.library-tile .cover-progress-fill {
+    height: 100%;
+    background: #e9e1cb
+}
+
+.library-tile-info-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: rgba(233, 225, 203, .92);
+    background: rgba(0, 0, 0, .28);
+    opacity: 0;
+    transition: opacity .2s ease, background .2s ease;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px)
+}
+
+.library-tile-info-btn:focus-visible,
+.library-tile:hover .library-tile-info-btn {
+    opacity: 1
+}
+
+.library-tile-info-btn:focus-visible,
+.library-tile-info-btn:hover {
+    background: rgba(0, 0, 0, .5)
+}
+
+.library-tile-info-btn svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8
+}
+
+.library-tile.is-selecting {
+    cursor: pointer
+}
+
+.library-tile.is-selecting .library-tile-info-btn {
+    display: none
+}
+
+.library-tile.is-selected {
+    box-shadow: 0 0 0 3px var(--ink), 0 8px 24px rgba(var(--ink-rgb), .2)
+}
+
+.library-tile.is-selected::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(var(--ink-rgb), .18);
+    pointer-events: none
+}
+
+.library-tile-check {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, .32);
+    border: 1.5px solid rgba(233, 225, 203, .85);
+    backdrop-filter: blur(2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    z-index: 2
+}
+
+.library-tile-check svg {
+    width: 14px;
+    height: 14px
+}
+
+.library-tile-check.is-checked {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--paper)
+}
+
+.library-selection-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 45;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: transform .28s ease, opacity .28s ease;
+    pointer-events: none
+}
+
+.library-selection-bar.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto
+}
+
+.selection-bar-inner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 14px 14px;
+    padding: 10px 16px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 12px;
+    box-shadow: 0 10px 34px var(--panel-shadow);
+    font-family: system-ui, sans-serif;
+    flex-wrap: wrap
+}
+
+.selection-bar-cancel {
+    appearance: none;
+    border: none;
+    background: rgba(233, 225, 203, .12);
+    color: var(--paper);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: .8rem;
+    line-height: 1;
+    flex-shrink: 0
+}
+
+.selection-bar-cancel:hover {
+    background: rgba(233, 225, 203, .22)
+}
+
+.selection-bar-count {
+    font-size: .78rem;
+    letter-spacing: .02em;
+    color: rgba(233, 225, 203, .85);
+    white-space: nowrap;
+    flex-shrink: 0
+}
+
+.selection-bar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-left: auto
+}
+
+.selection-status-group {
+    display: flex;
+    gap: 4px;
+    background: rgba(233, 225, 203, .1);
+    padding: 3px;
+    border-radius: 10px
+}
+
+.selection-status-btn,
+.selection-bar-btn {
+    appearance: none;
+    border: 1px solid rgba(233, 225, 203, .3);
+    background: 0 0;
+    color: var(--paper);
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-family: system-ui, sans-serif;
+    font-size: .72rem;
+    cursor: pointer;
+    transition: background .2s ease;
+    white-space: nowrap
+}
+
+.selection-status-btn {
+    border: none;
+    padding: 5px 10px
+}
+
+.selection-status-btn:hover,
+.selection-bar-btn:hover {
+    background: rgba(233, 225, 203, .18)
+}
+
+.selection-bar-btn-danger {
+    border-color: rgba(200, 90, 70, .5);
+    color: #e6a390
+}
+
+.selection-bar-btn-danger:hover {
+    background: rgba(200, 90, 70, .22)
+}
+
+.group-picker-panel {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 14px 8px;
+    padding: 12px 14px;
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 12px;
+    box-shadow: 0 10px 34px var(--panel-shadow);
+    font-family: system-ui, sans-serif
+}
+
+.group-picker-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px
+}
+
+.group-picker-list:empty {
+    display: none
+}
+
+.group-picker-empty {
+    font-size: .76rem;
+    color: var(--ink-quiet)
+}
+
+.group-picker-item {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: 0 0;
+    color: var(--ink-soft);
+    padding: 5px 12px;
+    border-radius: 14px;
+    font-size: .74rem;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease
+}
+
+.group-picker-item:hover {
+    border-color: var(--ink-quiet);
+    background: rgba(var(--ink-rgb), .05)
+}
+
+.group-picker-new {
+    display: flex;
+    gap: 8px
+}
+
+.group-picker-new input {
+    flex: 1;
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: var(--paper);
+    color: var(--ink);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-family: system-ui, sans-serif;
+    font-size: .78rem
+}
+
+.group-picker-new input:focus {
+    outline: none;
+    border-color: var(--ink-quiet)
+}
+
+.group-picker-new button {
+    appearance: none;
+    border: none;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    cursor: pointer
+}
+
+.group-picker-new button:hover {
+    opacity: .88
+}
+
+@media (max-width:600px) {
+    .selection-bar-inner {
+        gap: 8px;
+        padding: 9px 12px
+    }
+
+    .selection-bar-actions {
+        width: 100%;
+        margin-left: 0;
+        justify-content: flex-start
+    }
+}
+
+.group-delete-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--scrim);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease;
+    z-index: 50
+}
+
+.group-delete-overlay.is-open {
+    opacity: 1;
+    pointer-events: auto
+}
+
+.group-delete-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -48%) scale(.97);
+    width: 340px;
+    max-width: 86vw;
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 10px;
+    box-shadow: 0 20px 60px var(--panel-shadow);
+    padding: 26px 24px 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, transform .3s ease, background .35s ease;
+    z-index: 51;
+    font-family: system-ui, sans-serif;
+    text-align: center
+}
+
+.group-delete-modal.is-open {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+    pointer-events: auto
+}
+
+.group-delete-title {
+    font-family: var(--title-font);
+    font-size: 1.15rem;
+    font-weight: 500;
+    margin: 0 0 8px
+}
+
+.group-delete-desc {
+    font-size: .8rem;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    margin: 0 0 20px
+}
+
+.group-delete-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px
+}
+
+.group-delete-cancel,
+.group-delete-confirm {
+    appearance: none;
+    border: 1px solid var(--hairline);
+    background: 0 0;
+    color: var(--ink-soft);
+    padding: 7px 16px;
+    border-radius: 8px;
+    font-family: system-ui, sans-serif;
+    font-size: .78rem;
+    cursor: pointer;
+    transition: background .2s ease, border-color .2s ease
+}
+
+.group-delete-cancel:hover {
+    border-color: var(--ink-quiet);
+    background: rgba(var(--ink-rgb), .05)
+}
+
+.group-delete-confirm {
+    border-color: rgba(200, 90, 70, .5);
+    color: #b5533b
+}
+
+.group-delete-confirm:hover {
+    background: rgba(200, 90, 70, .1)
+}
+
+.library-grid-empty {
+    grid-column: 1/-1;
+    text-align: center;
+    font-family: system-ui, sans-serif;
+    font-size: .85rem;
+    color: var(--ink-quiet);
+    padding: 40px 0
+}
+
+@media (max-width:1200px) {
+    .library-grid {
+        grid-template-columns: repeat(4, 1fr)
+    }
+}
+
+@media (max-width:699px) {
+    .library-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px
+    }
+
+    .library-body {
+        padding: 12px 16px 30px
+    }
+
+    .library-header {
+        padding: 12px 16px 10px
+    }
+}
+
+.save-toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink);
+    color: var(--paper);
+    font-family: system-ui, sans-serif;
+    font-size: 12px;
+    letter-spacing: .02em;
+    padding: 9px 16px;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px var(--panel-shadow);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, transform .3s ease;
+    z-index: 40;
+    max-width: 80vw;
+    text-align: center
+}
+
+.save-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0)
+}
+
+.shortcuts-hint {
+    position: fixed;
+    bottom: 20px;
+    right: 24px;
+    font-family: system-ui, sans-serif;
+    font-size: 11px;
+    letter-spacing: .02em;
+    color: var(--ink-quiet);
+    opacity: .4;
+    pointer-events: none;
+    z-index: 21;
+    transition: opacity .3s ease
+}
+
+@media (max-width:600px) {
+    .shortcuts-hint {
+        display: none
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    * {
+        transition: none !important
+    }
+}
+
+.loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity .5s ease
+}
+
+.loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none
+}
+
+.loading-spinner {
+    font-family: system-ui, sans-serif;
+    font-size: .9rem;
+    color: var(--ink-quiet);
+    letter-spacing: .04em
+}
+
+.loading-spinner::after {
+    content: '';
+    animation: dots 1.5s steps(4) infinite
+}
+
+@keyframes dots {
+    0% {
+        content: ''
+    }
+
+    25% {
+        content: '.'
+    }
+
+    50% {
+        content: '..'
+    }
+
+    75% {
+        content: '...'
+    }
+}
+</style>
+</head>
+<body>
+ <div class="custom-scrollbar-track" aria-hidden="true">
+  <div class="custom-scrollbar-thumb" id="customScrollbarThumb"></div>
+ </div>
+ <div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner">
+   Loading your library
+  </div>
+ </div>
+ <div class="search-overlay" id="searchOverlay">
+ </div>
+ <div class="search-panel" id="searchPanel">
+  <div class="search-header">
+   <input autofocus="" id="searchInput" placeholder="Search in book..." type="text"/>
+   <span class="search-count" id="searchCount">
+    0 results
+   </span>
+   <button class="search-close" id="searchClose">
+    ✕
+   </button>
+  </div>
+  <div class="search-results" id="searchResults">
+  </div>
+ </div>
+ <div class="hover-zone" id="hoverZone">
+  <div class="toolbar-fade">
+  </div>
+  <div class="toolbar" id="toolbar">
+   <div class="toolbar-group">
+    <button aria-label="Toggle sidebar" class="icon-btn" id="sidebarToggle" title="Contents">
+     <svg fill="currentColor" viewbox="0 0 24 24">
+      <path d="M19,2H5C2.243,2,0,4.243,0,7v10c0,2.757,2.243,5,5,5h14c2.757,0,5-2.243,5-5V7c0-2.757-2.243-5-5-5ZM2,17V7c0-1.654,1.346-3,3-3h4V20H5c-1.654,0-3-1.346-3-3Zm20,0c0,1.654-1.346,3-3,3H11V4h8c1.654,0,3,1.346,3,3v10ZM7,11c0,.553-.447,1-1,1h-1c-.553,0-1-.447-1-1s.447-1,1-1h1c.553,0,1,.447,1,1Zm0,4c0,.553-.447,1-1,1h-1c-.553,0-1-.447-1-1s.447-1,1-1h1c.553,0,1,.447,1,1ZM4,7c0-.553,.447-1,1-1h1c.553,0,1,.447,1,1s-.447,1-1,1h-1c-.553,0-1-.447-1-1Z">
+      </path>
+     </svg>
+    </button>
+    <button aria-label="Open library" class="icon-btn" id="libraryToggle" title="Library">
+     <svg fill="currentColor" viewbox="0 0 24 24">
+      <path d="M23.786,19.492L16.713,1.836c-.624-1.529-2.376-2.269-3.911-1.645l-.925,.378c-.249,.102-.472,.244-.68,.402-.548-.594-1.326-.972-2.196-.972H3C1.346,0,0,1.346,0,3V21c0,1.654,1.346,3,3,3h6c1.654,0,3-1.346,3-3V8.895l5.304,13.242c.625,1.543,2.417,2.26,3.909,1.641l.926-.378c1.505-.574,2.286-2.434,1.647-3.907ZM13.574,7.446l2.778-1.132,4.171,10.412-2.778,1.132L13.574,7.446Zm-.942-5.025l.925-.378c.496-.206,1.097,.031,1.302,.543l.75,1.871-2.777,1.132-.747-1.866c-.208-.51,.038-1.095,.549-1.303ZM2,7h3v10H2V7Zm5,0h3v10h-3V7Zm3-4v2h-3V2h2c.551,0,1,.448,1,1ZM3,2h2v3H2V3c0-.552,.449-1,1-1Zm-1,19v-2h3v3H3c-.551,0-1-.448-1-1Zm7,1h-2v-3h3v2c0,.552-.449,1-1,1Zm12.929-.991c-.104,.247-.297,.438-.544,.539h0l-.926,.378c-.511,.206-1.095-.037-1.3-.54l-.669-1.671,2.778-1.132,.665,1.661c.102,.247,.101,.52-.003,.766Z">
+      </path>
+     </svg>
+    </button>
+   </div>
+   <div class="toolbar-group">
+    <button aria-label="Search this book" class="icon-btn" id="searchToggle" title="Search">
+     <svg fill="currentColor" viewbox="0 0 24 24">
+      <path d="M23.707,22.293l-5.969-5.969a10.016,10.016,0,1,0-1.414,1.414l5.969,5.969a1,1,0,0,0,1.414-1.414ZM10,18a8,8,0,1,1,8-8A8.009,8.009,0,0,1,10,18Z">
+      </path>
+     </svg>
+    </button>
+    <button aria-label="Reading settings" class="icon-btn" id="settingsToggle" title="Reading settings">
+     <svg fill="currentColor" viewbox="0 0 24 24">
+      <path d="M12,8a4,4,0,1,0,4,4A4,4,0,0,0,12,8Zm0,6a2,2,0,1,1,2-2A2,2,0,0,1,12,14Z">
+      </path>
+      <path d="M21.294,13.9l-.444-.256a9.1,9.1,0,0,0,0-3.29l.444-.256a3,3,0,1,0-3-5.2l-.445.257A8.977,8.977,0,0,0,15,3.513V3A3,3,0,0,0,9,3v.513A8.977,8.977,0,0,0,6.152,5.159L5.705,4.9a3,3,0,0,0-3,5.2l.444.256a9.1,9.1,0,0,0,0,3.29l-.444.256a3,3,0,1,0,3,5.2l.445-.257A8.977,8.977,0,0,0,9,20.487V21a3,3,0,0,0,6,0v-.513a8.977,8.977,0,0,0,2.848-1.646l.447.258a3,3,0,0,0,3-5.2Zm-2.548-3.776a7.048,7.048,0,0,1,0,3.75,1,1,0,0,0,.464,1.133l1.084.626a1,1,0,0,1-1,1.733l-1.086-.628a1,1,0,0,0-1.215.165,6.984,6.984,0,0,1-3.243,1.875,1,1,0,0,0-.751.969V21a1,1,0,0,1-2,0V19.748a1,1,0,0,0-.751-.969A6.984,6.984,0,0,1,7.006,16.9a1,1,0,0,0-1.215-.165l-1.084.627a1,1,0,1,1-1-1.732l1.084-.626a1,1,0,0,0,.464-1.133,7.048,7.048,0,0,1,0-3.75A1,1,0,0,0,4.79,8.992L3.706,8.366a1,1,0,0,1,1-1.733l1.086.628A1,1,0,0,0,7.006,7.1a6.984,6.984,0,0,1,3.243-1.875A1,1,0,0,0,11,4.252V3a1,1,0,0,1,2,0V4.252a1,1,0,0,0,.751.969A6.984,6.984,0,0,1,16.994,7.1a1,1,0,0,0,1.215.165l1.084-.627a1,1,0,1,1,1,1.732l-1.084.626A1,1,0,0,0,18.746,10.125Z">
+      </path>
+     </svg>
+    </button>
+   </div>
+  </div>
+ </div>
+ <div class="sidebar-backdrop" id="sidebarBackdrop">
+ </div>
+ <aside aria-label="Book contents" class="sidebar" id="sidebar">
+  <div class="sidebar-book" id="bookInfo">
+   <div class="sidebar-cover" id="bookCover">
+    <span>
+     ?
+    </span>
+   </div>
+   <div class="sidebar-book-info">
+    <p class="sidebar-book-title" id="bookTitle">
+     No book open
+    </p>
+    <p class="sidebar-book-author" id="bookAuthor">
+    </p>
+    <p class="sidebar-book-progress" id="bookProgress">
+    </p>
+   </div>
+   <button aria-label="Book info" class="book-info-btn sidebar-book-info-btn" id="sidebarBookInfoBtn" title="Book info">
+    <svg viewbox="0 0 24 24">
+     <circle cx="12" cy="12" r="9.5" stroke-width="1.6">
+     </circle>
+     <line stroke-linecap="round" stroke-width="1.8" x1="12" x2="12" y1="11" y2="16.5">
+     </line>
+     <circle cx="12" cy="7.5" fill="currentColor" r="1.1" stroke="none">
+     </circle>
+    </svg>
+   </button>
+  </div>
+  <div class="sidebar-hairline">
+  </div>
+  <div class="sidebar-label-row">
+   <button aria-expanded="false" class="sidebar-label-toggle" id="sidebarLabelToggle">
+    <span class="label-text" id="sidebarLabelText">
+     Contents
+    </span>
+    <svg fill="currentColor" height="12" id="sidebarLabelArrow" style="transition:transform .25s ease" viewbox="0 0 24 24" width="12">
+     <path d="M12 8l6 6H6z">
+     </path>
+    </svg>
+   </button>
+  </div>
+  <ul class="sidebar-contents" id="sidebarLabelMenu" style="list-style:none;margin:0;padding:0 10px 6px;display:none">
+   <li>
+    <button class="sidebar-item" data-section="media" id="sidebarSwitchItem">
+     Media
+     <span class="sidebar-item-meta" id="mediaCount">
+      0
+     </span>
+    </button>
+   </li>
+  </ul>
+  <ul class="sidebar-contents" id="chapterList">
+  </ul>
+  <div class="sidebar-media" hidden="" id="mediaView">
+   <div class="sidebar-media-grid" id="mediaGrid">
+   </div>
+   <p class="sidebar-media-empty" id="mediaEmpty">
+    No images found in this book.
+   </p>
+  </div>
+ </aside>
+ <aside aria-label="Reading settings" class="settings-panel" id="settingsPanel">
+  <div class="settings-header">
+   <h2>
+    Reading settings
+   </h2>
+   <button class="settings-close" id="settingsClose">
+    ✕
+   </button>
+  </div>
+  <div class="settings-connection">
+   <div class="settings-connection-status">
+    <span class="status-dot offline" id="gdriveDot">
+    </span>
+    <span id="gdriveStatusText">
+     Disconnected
+    </span>
+   </div>
+   <button class="settings-connection-action" id="gdriveConnect">
+    Connect
+   </button>
+  </div>
+  <div class="settings-scroll">
+   <div class="settings-section">
+    <div class="settings-section-label">
+     Page
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      Size
+     </span>
+     <div class="settings-control">
+      <input class="settings-input" id="bodySizeInput" max="28" min="8" step="1" type="number" value="16"/>
+      <span class="settings-row-value">
+       px
+      </span>
+     </div>
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      Spacing
+     </span>
+     <div class="settings-control">
+      <input class="settings-input" id="bodySpacingInput" max="3.0" min="1.0" step="0.1" type="number" value="1.8"/>
+      <span class="settings-row-value">
+       px
+      </span>
+     </div>
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      Indent
+     </span>
+     <div class="settings-control">
+      <input class="settings-input" id="bodyIndentInput" max="40" min="0" step="1" type="number" value="24"/>
+      <span class="settings-row-value">
+       px
+      </span>
+     </div>
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      Margin
+     </span>
+     <div class="settings-control">
+      <input class="settings-input" id="marginInput" max="40" min="0" step="1" type="number" value="12"/>
+      <span class="settings-row-value">
+       %
+      </span>
+     </div>
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      WPM
+     </span>
+     <div class="settings-control">
+      <input class="settings-input" id="wpmInput" max="600" min="50" step="10" type="number" value="220"/>
+      <span class="settings-row-value">
+       wpm
+      </span>
+     </div>
+    </div>
+   </div>
+   <div class="settings-section">
+    <div class="settings-section-label">
+     Typography
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      Body
+     </span>
+     <div class="settings-control" id="bodyFontContainer">
+     </div>
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      Title
+     </span>
+     <div class="settings-control" id="titleFontContainer">
+     </div>
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      Author
+     </span>
+     <div class="settings-control" id="authorFontContainer">
+     </div>
+    </div>
+    <div class="custom-row" id="customFontRow">
+     <div class="custom-row-label">
+      Custom Font
+     </div>
+     <div class="custom-row-input-group">
+      <input id="customFontName" placeholder="Font name" type="text" value=""/>
+      <label class="file-label" for="fontUpload" id="fontUploadLabel">
+       + Upload
+      </label>
+      <input accept=".ttf,.otf,.woff,.woff2" id="fontUpload" type="file"/>
+      <span class="file-status" id="fontStatus">
+       No file
+      </span>
+      <button class="file-remove" id="fontRemove" title="Remove">
+       ✕
+      </button>
+      <button class="font-save-btn" id="fontSaveBtn">
+       Save
+      </button>
+     </div>
+     <div class="saved-fonts-list" id="savedFontsList">
+      <div class="saved-fonts-label">
+       Saved Fonts
+      </div>
+      <div id="savedFontsContainer">
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="settings-section">
+    <div class="settings-section-label">
+     Theme
+    </div>
+    <div class="settings-row" style="min-height:auto">
+     <div class="settings-control" id="themeToggleContainer" style="justify-content:flex-start">
+     </div>
+    </div>
+    <div class="theme-editor" id="themeEditor">
+     <div class="theme-editor-row">
+      <label for="customPaper">
+       Paper
+      </label>
+      <input id="customPaper" placeholder="#E9E1CB" type="text" value="#E9E1CB"/>
+      <label for="customInk" style="margin-left:14px">
+       Ink
+      </label>
+      <input id="customInk" placeholder="#2A2419" type="text" value="#2A2419"/>
+     </div>
+     <div class="theme-editor-preview" id="themePreview">
+      The quick brown fox jumps over the lazy dog.
+     </div>
+     <div class="theme-save-row">
+      <input id="themeNameInput" placeholder="Theme name" type="text"/>
+      <button class="theme-save-btn" id="themeSaveBtn">
+       Save
+      </button>
+     </div>
+     <div class="saved-themes" id="savedThemesContainer">
+      <div class="saved-themes-label">
+       Saved Themes
+      </div>
+      <div id="savedThemesList">
+      </div>
+     </div>
+    </div>
+   </div>
+   <div class="settings-section">
+    <div class="settings-section-label">
+     Background
+    </div>
+    <div class="settings-row" style="min-height:auto">
+     <div style="display:flex;align-items:center;gap:12px;flex:1;justify-content:flex-end">
+      <label class="file-label" for="bgUpload" id="bgUploadLabel" style="font-family:system-ui;font-size:.73rem;color:var(--ink-quiet);cursor:pointer;padding:4px 10px;border:1px dashed var(--hairline);border-radius:4px;transition:background .2s ease">
+       + Upload texture
+      </label>
+      <input accept="image/*" id="bgUpload" style="display:none" type="file"/>
+      <span id="bgPreview" style="width:28px;height:28px;border-radius:4px;background-size:cover;background-position:center;flex-shrink:0;display:none">
+      </span>
+      <span id="bgFilename" style="font-family:system-ui;font-size:.73rem;color:var(--ink-soft);flex:1">
+       No background
+      </span>
+      <button class="file-remove" id="bgRemove" style="appearance:none;border:none;background:0 0;color:var(--ink-quiet);cursor:pointer;padding:2px 6px;font-size:.8rem" title="Remove">
+       ✕
+      </button>
+     </div>
+    </div>
+    <div class="settings-row" style="min-height:auto;margin-top:8px">
+     <div class="settings-control toggle-group" id="bgSizeGroup" style="max-width:200px;flex:0 0 auto;justify-content:flex-start;gap:0">
+      <button class="toggle-btn is-selected" data-bg-size="auto">
+       default
+      </button>
+      <button class="toggle-btn" data-bg-size="contain">
+       contain
+      </button>
+      <button class="toggle-btn" data-bg-size="cover">
+       cover
+      </button>
+     </div>
+    </div>
+   </div>
+  </div>
+ </aside>
+ <div class="page">
+  <main></main>
+ </div>
+ <div class="shortcuts-hint">
+  ← → to navigate · ⌘F to search
+ </div>
+ <div class="touch-hint" id="touchHint">
+  tap near the top for controls
+ </div>
+ <div class="media-lightbox-overlay" id="mediaLightboxOverlay">
+ </div>
+ <div class="media-lightbox" id="mediaLightbox">
+  <img alt="" id="mediaLightboxImg" src=""/>
+ </div>
+ <div class="book-info-overlay" id="bookInfoOverlay">
+ </div>
+ <div aria-label="Book info" aria-modal="true" class="book-info-modal" id="bookInfoModal" role="dialog">
+  <button aria-label="Close" class="book-info-close" id="bookInfoClose">
+   ✕
+  </button>
+  <div class="book-info-cover-wrap">
+   <button aria-label="Change cover" class="book-info-cover" id="infoCoverPreview" type="button">
+    <img alt="" hidden="" id="infoCoverImg"/>
+    <span class="book-info-cover-placeholder" id="infoCoverPlaceholder">+</span>
+   </button>
+   <div class="book-info-cover-actions">
+    <button class="book-info-cover-btn" id="infoCoverUploadBtn" type="button">
+     Change cover
+    </button>
+    <button class="book-info-cover-btn" hidden="" id="infoCoverRemoveBtn" type="button">
+     Remove
+    </button>
+   </div>
+   <input accept="image/*" hidden="" id="infoCoverInput" type="file"/>
+  </div>
+  <h2 class="book-info-title" id="infoTitle">
+   Book Title
+  </h2>
+  <p class="book-info-author" id="infoAuthor">
+   Author
+  </p>
+  <p class="book-info-date" id="infoDate">
+   Published
+  </p>
+  <div class="book-info-status" id="infoStatusContainer">
+   <span class="book-info-status-label">
+    Status
+   </span>
+   <div class="book-info-status-options" id="infoStatusOptions">
+    <button class="book-info-status-btn" data-status="unread">
+     Unread
+    </button>
+    <button class="book-info-status-btn" data-status="reading">
+     Reading
+    </button>
+    <button class="book-info-status-btn" data-status="complete">
+     Complete
+    </button>
+   </div>
+  </div>
+  <div class="book-info-fetch">
+   <button class="book-info-fetch-btn" id="infoFetchBtn" type="button">
+    Fetch details from Open Library
+   </button>
+  </div>
+  <div class="book-info-divider">
+  </div>
+  <div class="book-info-desc-section">
+   <div class="book-info-desc-header">
+    <span class="book-info-desc-label">
+     Description
+    </span>
+    <button class="book-info-desc-edit-btn" id="infoDescEditBtn">
+     Edit
+    </button>
+   </div>
+   <div class="book-info-desc-text" id="infoDescText">
+    No description yet.
+   </div>
+   <div class="book-info-desc-edit" hidden="" id="infoDescEdit">
+    <textarea id="infoDescTextarea" placeholder="Add a description…" rows="5"></textarea>
+    <div class="book-info-desc-edit-actions">
+     <button class="book-info-desc-cancel" id="infoDescCancel">
+      Cancel
+     </button>
+     <button class="book-info-desc-save" id="infoDescSave">
+      Save
+     </button>
+    </div>
+   </div>
+  </div>
+  <div class="book-info-divider">
+  </div>
+  <div class="book-info-danger">
+   <button class="book-info-delete-btn" id="infoDeleteBtn" type="button">
+    Delete book
+   </button>
+  </div>
+ </div>
+ <div class="library-view" id="libraryView">
+  <div class="library-header" id="libraryHeader">
+   <div class="library-label" id="libraryLabel">
+    <button aria-label="Back to library" class="library-back-btn" hidden="" id="libraryBackBtn" type="button">
+     <svg fill="none" viewbox="0 0 24 24">
+      <path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+     </svg>
+    </button>
+    <span id="libraryLabelText">Library</span>
+   </div>
+   <div class="library-searchbar">
+    <input class="library-search-input" id="librarySearchInput" placeholder="Search your library..." type="text"/>
+    <div class="library-actions">
+     <div style="position:relative">
+      <button aria-label="Sort books" class="library-btn" id="librarySortBtn" title="Sort books">
+       <svg fill="currentColor" viewbox="0 0 24 24">
+        <path d="M12,3a1,1,0,0,0-1,1V17.586L9.707,16.293a1,1,0,0,0-1.414,1.414l3,3a1,1,0,0,0,1.414,0l3-3a1,1,0,0,0-1.414-1.414L13,17.586V4A1,1,0,0,0,12,3Z">
+        </path>
+       </svg>
+      </button>
+      <div class="sort-dropdown" id="sortDropdown">
+       <button class="is-active" data-sort="recent">
+        Recently Added
+       </button>
+       <button data-sort="title">
+        Title
+       </button>
+       <button data-sort="author">
+        Author
+       </button>
+      </div>
+     </div>
+     <button aria-label="Add a book" class="library-btn" id="libraryAddBtn" title="Add a book">
+      <svg fill="currentColor" viewbox="0 0 24 24">
+       <path d="M13,11V4a1,1,0,0,0-2,0v7H4a1,1,0,0,0,0,2h7v7a1,1,0,0,0,2,0V13h7a1,1,0,0,0,0-2Z">
+       </path>
+      </svg>
+     </button>
+     <input accept=".epub" hidden="" id="libraryFileInput" multiple="" type="file"/>
+    </div>
+   </div>
+  </div>
+  <div class="library-body" id="libraryBody">
+  </div>
+  <div class="library-selection-bar" id="librarySelectionBar">
+   <div class="group-picker-panel" hidden="" id="groupPickerPanel">
+    <div class="group-picker-list" id="groupPickerList"></div>
+    <div class="group-picker-new">
+     <input id="groupPickerNewInput" maxlength="40" placeholder="New group name…" type="text"/>
+     <button id="groupPickerCreateBtn" type="button">Create</button>
+    </div>
+   </div>
+   <div class="selection-bar-inner">
+    <button aria-label="Cancel selection" class="selection-bar-cancel" id="selectionCancelBtn" type="button">✕</button>
+    <span class="selection-bar-count" id="selectionCount">0 selected</span>
+    <div class="selection-bar-actions">
+     <div class="selection-status-group">
+      <button class="selection-status-btn" data-status="unread" type="button">Unread</button>
+      <button class="selection-status-btn" data-status="reading" type="button">Reading</button>
+      <button class="selection-status-btn" data-status="complete" type="button">Complete</button>
+     </div>
+     <button class="selection-bar-btn" id="selectionGroupBtn" type="button">Group</button>
+     <button class="selection-bar-btn" hidden="" id="selectionRemoveGroupBtn" type="button">Ungroup</button>
+     <button class="selection-bar-btn selection-bar-btn-danger" id="selectionDeleteBtn" type="button">Delete</button>
+    </div>
+   </div>
+  </div>
+ </div>
+ <div class="group-delete-overlay" id="groupDeleteOverlay"></div>
+ <div aria-modal="true" class="group-delete-modal" id="groupDeleteModal" role="dialog">
+  <p class="group-delete-title">Delete this group?</p>
+  <p class="group-delete-desc">The books will stay in your library — they'll just be removed from this group.</p>
+  <div class="group-delete-actions">
+   <button class="group-delete-cancel" id="groupDeleteCancel" type="button">Cancel</button>
+   <button class="group-delete-confirm" id="groupDeleteConfirm" type="button">Delete group</button>
+  </div>
+ </div>
+ <div class="save-toast" id="saveToast">
+ </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+var state = {
+    currentChapter: "chapter-1",
+    bodySize: 16,
+    bodySpacing: 1.8,
+    bodyIndent: 24,
+    bodyFont: "default",
+    titleFont: "default",
+    authorFont: "default",
+    themeMode: "ink",
+    progress: {},
+    customPaper: "#E9E1CB",
+    customInk: "#2A2419",
+    customFontName: "",
+    customFontUrl: "",
+    savedFonts: [],
+    activeFontIndex: -1,
+    customBgUrl: "",
+    bgSize: "auto",
+    savedThemes: [],
+    activeThemeIndex: -1,
+    margin: 12,
+    wpm: 220,
+    lastOpenBookId: null,
+    libraryOpen: false
+  },
+  $ = function(s) {
+    return document.querySelector(s)
+  },
+  $$ = function(s) {
+    return document.querySelectorAll(s)
+  };
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, function(ch) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    } [ch]
+  })
+}
+
+function hexToRgb(hex) {
+  var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? {
+    r: parseInt(result[1], 16),
+    g: parseInt(result[2], 16),
+    b: parseInt(result[3], 16)
+  } : null
+}
+
+function rgbToHex(r, g, b) {
+  return "#" + [r, g, b].map(function(c) {
+    return Math.round(c).toString(16).padStart(2, "0")
+  }).join("")
+}
+
+function lerp(a, b, t) {
+  return a + (b - a) * t
+}
+
+function mixColors(c1, c2, t) {
+  return rgbToHex(lerp(c1.r, c2.r, t), lerp(c1.g, c2.g, t), lerp(c1.b, c2.b, t))
+}
+
+function darken(hex, amount) {
+  var rgb = hexToRgb(hex);
+  return rgb ? rgbToHex(Math.max(0, rgb.r - amount), Math.max(0, rgb.g - amount), Math.max(0, rgb.b - amount)) : hex
+}
+
+function rgba(hex, alpha) {
+  var rgb = hexToRgb(hex);
+  return rgb ? "rgba(" + rgb.r + "," + rgb.g + "," + rgb.b + "," + alpha + ")" : "rgba(0,0,0,0)"
+}
+
+function saveState() {
+  try {
+    return localStorage.setItem("reader_state", JSON.stringify(state)), !0
+  } catch (e) {
+    return !1
+  }
+}
+
+function loadState() {
+  try {
+    var raw = localStorage.getItem("reader_state");
+    if (!raw) return !1;
+    var saved = JSON.parse(raw);
+    return Object.assign(state, saved), !0
+  } catch (e) {
+    return !1
+  }
+}
+var toastEl = $("#saveToast"),
+  toastTimeout = null;
+
+function showToast(message) {
+  toastEl && (toastEl.textContent = message, toastEl.classList.add("show"), toastTimeout && clearTimeout(toastTimeout), toastTimeout = setTimeout(function() {
+    toastEl.classList.remove("show")
+  }, 3200))
+}
+
+function applyCustomTheme(paper, ink, themeIndex) {
+  paper = paper || state.customPaper || "#E9E1CB";
+  var inkRgb = hexToRgb(ink = ink || state.customInk || "#2A2419"),
+    paperRgb = hexToRgb(paper);
+  if (inkRgb && paperRgb) {
+    var inkSoft = mixColors(inkRgb, paperRgb, .35),
+      inkQuiet = mixColors(inkRgb, paperRgb, .65),
+      inkHover = darken(ink, 10),
+      hairline = mixColors(inkRgb, paperRgb, .75),
+      panelShadow = rgba(ink, .14),
+      scrim = rgba(ink, .22),
+      inkRgbStr = inkRgb.r + ", " + inkRgb.g + ", " + inkRgb.b,
+      prefix = void 0 !== themeIndex && themeIndex >= 0 ? "theme-" + themeIndex + "-" : "custom-";
+    document.documentElement.style.setProperty("--" + prefix + "ink-soft", inkSoft), document.documentElement.style.setProperty("--" + prefix + "ink-quiet", inkQuiet), document.documentElement.style.setProperty("--" + prefix + "ink-hover", inkHover), document.documentElement.style.setProperty("--" + prefix + "hairline", hairline), document.documentElement.style.setProperty("--" + prefix + "panel-shadow", panelShadow), document.documentElement.style.setProperty("--" + prefix + "scrim", scrim), document.documentElement.style.setProperty("--" + prefix + "paper", paper), document.documentElement.style.setProperty("--" + prefix + "ink", ink), document.documentElement.style.setProperty("--" + prefix + "ink-rgb", inkRgbStr)
+  }
+}
+
+function applyThemeByIndex(index) {
+  if (index < 0 || index >= state.savedThemes.length) return document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", ""), void(state.activeThemeIndex = -1);
+  var theme = state.savedThemes[index];
+  applyCustomTheme(theme.paper, theme.ink, index), document.body.setAttribute("data-theme", "saved-" + index), state.activeThemeIndex = index
+}
+
+function renderThemeToggles() {
+  var container = $("#themeToggleContainer");
+  if (container) {
+    var html = '<div class="toggle-group" id="themeToggle" style="max-width:100%;flex-wrap:wrap;display:flex;">';
+    if (html += '<button class="toggle-btn is-selected" data-theme="ink" style="padding:5px 16px;">ink</button>', state.savedThemes.forEach(function(theme, i) {
+        var isActive = state.activeThemeIndex === i;
+        html += '<button class="toggle-btn' + (isActive ? " is-selected" : "") + '" data-theme="saved-' + i + '" style="padding:5px 16px;">' + theme.name + "</button>"
+      }), html += '<button class="toggle-btn" data-theme="custom" style="padding:5px 16px;">custom</button>', html += "</div>", container.innerHTML = html, container.querySelector("#themeToggle").addEventListener("click", function(e) {
+        var btn = e.target.closest(".toggle-btn");
+        if (btn) {
+          var themeVal = btn.getAttribute("data-theme");
+          if (this.querySelectorAll(".toggle-btn").forEach(function(b) {
+              b.classList.remove("is-selected")
+            }), btn.classList.add("is-selected"), "ink" === themeVal) state.themeMode = "ink", document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", ""), state.activeThemeIndex = -1, document.getElementById("themeEditor").classList.remove("is-open"), saveState();
+          else if ("custom" === themeVal) state.themeMode = "custom", document.getElementById("themeEditor").classList.add("is-open"), applyCustomTheme(state.customPaper, state.customInk, "custom"), document.body.setAttribute("data-theme", "custom"), saveState();
+          else if (themeVal.startsWith("saved-")) {
+            var idx = parseInt(themeVal.split("-")[1]);
+            state.themeMode = "saved", applyThemeByIndex(idx), document.getElementById("themeEditor").classList.remove("is-open"), saveState()
+          }
+        }
+      }), state.activeThemeIndex >= 0 && state.activeThemeIndex < state.savedThemes.length)(btns = container.querySelectorAll(".toggle-btn")).forEach(function(b) {
+      b.getAttribute("data-theme") === "saved-" + state.activeThemeIndex && (btns.forEach(function(b2) {
+        b2.classList.remove("is-selected")
+      }), b.classList.add("is-selected"))
+    });
+    else if ("custom" === state.themeMode) {
+      var btns;
+      (btns = container.querySelectorAll(".toggle-btn")).forEach(function(b) {
+        "custom" === b.getAttribute("data-theme") && (btns.forEach(function(b2) {
+          b2.classList.remove("is-selected")
+        }), b.classList.add("is-selected"), document.getElementById("themeEditor").classList.add("is-open"))
+      })
+    }
+  }
+}
+
+function renderSavedThemesList() {
+  var container = document.getElementById("savedThemesList");
+  container && (0 !== state.savedThemes.length ? (container.innerHTML = state.savedThemes.map(function(theme, i) {
+    return '<div class="saved-theme-item" data-index="' + i + '"><span class="theme-name-text" data-index="' + i + '"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid var(--hairline);background:' + theme.paper + ";border-color:" + theme.ink + ';margin-right:8px;vertical-align:middle;"></span><span class="theme-name" style="vertical-align:middle;">' + theme.name + '</span></span><button class="theme-delete" data-index="' + i + '">✕</button></div>'
+  }).join(""), container.querySelectorAll(".theme-name-text").forEach(function(el) {
+    el.addEventListener("dblclick", function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.getAttribute("data-index")),
+        currentName = state.savedThemes[idx].name,
+        nameSpan = this.querySelector(".theme-name");
+      if (nameSpan) {
+        var input = document.createElement("input");
+        input.type = "text", input.className = "theme-name-input", input.value = currentName;
+        var swatch = this.querySelector("span:first-child"),
+          fragment = document.createDocumentFragment(),
+          swatchClone = swatch.cloneNode(!0);
+        fragment.appendChild(swatchClone), fragment.appendChild(input), this.replaceChild(fragment, nameSpan), input.focus(), input.select(), input.addEventListener("blur", function() {
+          var newName = input.value.trim() || "Untitled";
+          state.savedThemes[idx].name = newName, renderSavedThemesList(), renderThemeToggles(), saveState()
+        }), input.addEventListener("keydown", function(ev) {
+          "Enter" === ev.key && (ev.preventDefault(), input.blur()), "Escape" === ev.key && (ev.preventDefault(), input.value = currentName, input.blur())
+        })
+      }
+    })
+  }), container.querySelectorAll(".saved-theme-item").forEach(function(item) {
+    item.addEventListener("click", function(e) {
+      if (!e.target.classList.contains("theme-delete") && "INPUT" !== e.target.tagName) {
+        var idx = parseInt(this.getAttribute("data-index")),
+          theme = state.savedThemes[idx];
+        theme && (state.customPaper = theme.paper, state.customInk = theme.ink, customPaperInput.value = theme.paper, customInkInput.value = theme.ink, "custom" === state.themeMode && (applyCustomTheme(state.customPaper, state.customInk, "custom"), saveState()))
+      }
+    })
+  }), container.querySelectorAll(".theme-delete").forEach(function(btn) {
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.getAttribute("data-index"));
+      state.savedThemes.splice(idx, 1), state.activeThemeIndex === idx ? state.activeThemeIndex = -1 : state.activeThemeIndex > idx && state.activeThemeIndex--, renderThemeToggles(), renderSavedThemesList(), -1 === state.activeThemeIndex ? (document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", "")) : applyThemeByIndex(state.activeThemeIndex), saveState()
+    })
+  })) : container.innerHTML = '<div style="font-family:system-ui;font-size:.7rem;color:var(--ink-quiet);padding:4px 0;">No saved themes</div>')
+}
+
+function renderFontToggles() {
+  function buildFontGroup(containerId, currentValue, onChange) {
+    var container = document.getElementById(containerId);
+    if (container) {
+      var html = '<div class="toggle-group" style="max-width:100%;flex-wrap:wrap;display:flex;">';
+      if (html += '<button class="toggle-btn' + ("default" === currentValue ? " is-selected" : "") + '" data-font="default" style="padding:5px 12px;">default</button>', currentValue && currentValue.startsWith("saved-")) {
+        var idx = parseInt(currentValue.split("-")[1]);
+        if (idx >= 0 && idx < state.savedFonts.length) html += '<button class="toggle-btn is-selected" data-font="' + currentValue + '" style="padding:5px 12px;">' + state.savedFonts[idx].name + "</button>"
+      }
+      html += '<button class="toggle-btn' + ("custom" === currentValue ? " is-selected" : "") + '" data-font="custom" style="padding:5px 12px;">custom</button>', html += "</div>", container.innerHTML = html, container.querySelector(".toggle-group").addEventListener("click", function(e) {
+        var btn = e.target.closest(".toggle-btn");
+        if (btn) {
+          var val = btn.getAttribute("data-font");
+          this.querySelectorAll(".toggle-btn").forEach(function(b) {
+            b.classList.remove("is-selected")
+          }), btn.classList.add("is-selected"), onChange(val)
+        }
+      })
+    }
+  }
+  buildFontGroup("bodyFontContainer", state.bodyFont, function(val) {
+    state.bodyFont = val, applyBodyTypography(), updateCustomFontRowVisibility(), renderSavedFontsList(), renderFontToggles(), saveState()
+  }), buildFontGroup("titleFontContainer", state.titleFont, function(val) {
+    state.titleFont = val, applyTitleFont(), updateCustomFontRowVisibility(), renderSavedFontsList(), renderFontToggles(), saveState()
+  }), buildFontGroup("authorFontContainer", state.authorFont, function(val) {
+    state.authorFont = val, applyAuthorFont(), updateCustomFontRowVisibility(), renderSavedFontsList(), renderFontToggles(), saveState()
+  }), renderSavedFontsList()
+}
+
+function renderSavedFontsList() {
+  var container = $("#savedFontsContainer");
+  container && (0 !== state.savedFonts.length ? (container.innerHTML = state.savedFonts.map(function(font, i) {
+    return '<div class="saved-font-item' + (state.bodyFont === "saved-" + i || state.titleFont === "saved-" + i || state.authorFont === "saved-" + i ? " is-active" : "") + '" data-index="' + i + '"><span class="font-name" data-index="' + i + '">' + font.name + ' <span class="font-apply">●</span></span><button class="font-delete" data-index="' + i + '">✕</button></div>'
+  }).join(""), container.querySelectorAll(".font-name").forEach(function(el) {
+    el.addEventListener("dblclick", function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.getAttribute("data-index")),
+        currentName = state.savedFonts[idx].name,
+        input = document.createElement("input");
+      input.type = "text", input.className = "font-name-input", input.value = currentName, input.setAttribute("data-index", idx), this.parentNode.replaceChild(input, this), input.focus(), input.select(), input.addEventListener("blur", function() {
+        var newName = input.value.trim() || "Untitled";
+        state.savedFonts[idx].name = newName, renderFontToggles(), renderSavedFontsList(), renderFontToggles(), saveState()
+      }), input.addEventListener("keydown", function(ev) {
+        "Enter" === ev.key && (ev.preventDefault(), input.blur()), "Escape" === ev.key && (ev.preventDefault(), input.value = currentName, input.blur())
+      })
+    })
+  }), container.querySelectorAll(".saved-font-item").forEach(function(item) {
+    item.addEventListener("click", function(e) {
+      if (!e.target.classList.contains("font-delete") && !e.target.classList.contains("font-name-input")) {
+        var fontKey = "saved-" + parseInt(this.getAttribute("data-index")),
+          target = "body";
+        "custom" === state.bodyFont ? target = "body" : "custom" === state.titleFont ? target = "title" : "custom" === state.authorFont && (target = "author"), "body" === target ? (state.bodyFont = fontKey, applyBodyTypography()) : "title" === target ? (state.titleFont = fontKey, applyTitleFont()) : "author" === target && (state.authorFont = fontKey, applyAuthorFont()), renderFontToggles(), updateCustomFontRowVisibility(), saveState()
+      }
+    })
+  }), container.querySelectorAll(".font-delete").forEach(function(btn) {
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      var idx = parseInt(this.getAttribute("data-index"));
+      state.savedFonts.splice(idx, 1), ["bodyFont", "titleFont", "authorFont"].forEach(function(key) {
+        if (state[key] === "saved-" + idx) state[key] = "default";
+        else if (state[key].startsWith("saved-")) {
+          var savedIdx = parseInt(state[key].split("-")[1]);
+          savedIdx > idx && (state[key] = "saved-" + (savedIdx - 1))
+        }
+      }), renderFontToggles(), applyBodyTypography(), applyTitleFont(), applyAuthorFont(), updateCustomFontRowVisibility(), saveState()
+    })
+  })) : container.innerHTML = '<div style="font-family:system-ui;font-size:.7rem;color:var(--ink-quiet);padding:4px 0;">No saved fonts</div>')
+}
+
+function updateCustomFontRowVisibility() {
+  var show = "custom" === state.bodyFont || "custom" === state.titleFont || "custom" === state.authorFont,
+    row = $("#customFontRow");
+  show ? row.classList.add("is-open") : row.classList.remove("is-open")
+}
+
+function getFontFamily(fontKey) {
+  if ("default" === fontKey) return null;
+  if ("custom" === fontKey) return state.customFontName || null;
+  if (fontKey && fontKey.startsWith("saved-")) {
+    var idx = parseInt(fontKey.split("-")[1]);
+    if (idx >= 0 && idx < state.savedFonts.length) {
+      var font = state.savedFonts[idx],
+        styleId = "saved-font-style-" + idx;
+      if (!document.getElementById(styleId)) {
+        var style = document.createElement("style");
+        style.id = styleId, style.textContent = '@font-face { font-family: "' + font.fontName + '"; src: url("' + font.fontUrl + '"); }', document.head.appendChild(style)
+      }
+      return font.fontName
+    }
+  }
+  return null
+}
+
+function applyBodyTypography() {
+  var scale = state.bodySize / 16;
+  document.documentElement.style.setProperty("--text-scale", scale), document.documentElement.style.setProperty("--line-height", state.bodySpacing), document.documentElement.style.setProperty("--text-indent", state.bodyIndent + "px");
+  var fontFamily = getFontFamily(state.bodyFont);
+  fontFamily ? (document.body.setAttribute("data-body-font", "custom"), document.documentElement.style.setProperty("--custom-font-name", fontFamily), document.documentElement.style.setProperty("--body-font", fontFamily)) : (document.body.removeAttribute("data-body-font"), document.documentElement.style.setProperty("--custom-font-name", ""), document.documentElement.style.removeProperty("--body-font"))
+}
+
+function applyTitleFont() {
+  var fontFamily = getFontFamily(state.titleFont),
+    titleEl = document.querySelector(".book-title");
+  titleEl && (titleEl.style.fontFamily = fontFamily || ""), $$(".chapter-byline .cb-title").forEach(function(el) {
+    el.style.fontFamily = fontFamily || ""
+  })
+}
+
+function applyAuthorFont() {
+  var fontFamily = getFontFamily(state.authorFont),
+    authorEl = document.querySelector(".book-author");
+  authorEl && (authorEl.style.fontFamily = fontFamily || ""), $$(".chapter-byline .cb-by").forEach(function(el) {
+    el.style.fontFamily = fontFamily || ""
+  })
+}
+var LIBRARY_KEY = "reader_library",
+  currentSort = "recent",
+  isLibraryScrolled = !1;
+
+function loadLibraryList() {
+  try {
+    var raw = localStorage.getItem(LIBRARY_KEY);
+    return raw ? JSON.parse(raw) : []
+  } catch (e) {
+    return []
+  }
+}
+
+function saveLibraryList(list) {
+  try {
+    return localStorage.setItem(LIBRARY_KEY, JSON.stringify(list)), !0
+  } catch (e) {
+    return !1
+  }
+}
+var currentBook = null;
+
+function progressKey(chapterId) {
+  return (currentBook ? currentBook.id : "") + "::" + chapterId
+}
+var chapterPages = $$(".chapter-page"),
+  sidebarItems = $$(".sidebar-item[data-target]");
+
+function showChapter(id, restoreScroll) {
+  var pages = $$(".chapter-page");
+  if (!Array.prototype.some.call(pages, function(page) {
+      return page.getAttribute("data-chapter-id") === id;
+    }) && pages.length) {
+    id = pages[0].getAttribute("data-chapter-id");
+  }
+  state.currentChapter = id;
+
+  if (!document.body.classList.contains("library-open")) {
+    updateReaderDocumentTitle();
+  }
+
+  chapterPages.forEach(function(page) {
+    page.hidden = page.getAttribute("data-chapter-id") !== id;
+  });
+  sidebarItems.forEach(function(item) {
+    item.classList.toggle("is-current", item.getAttribute("data-target") === id);
+  });
+
+  if (restoreScroll) {
+    // restoreScroll: wait for layout to settle before restoring position
+    setTimeout(function() {
+      restoreChapterScroll(id);
+    }, 100);
+  } else {
+    window.scrollTo(0, 0);
+    updateChapterMeta();
+    updateReadingProgress();
+    updateSidebarMeta();
+  }
+
+  saveState();
+  if (currentBook) {
+    currentBook.lastChapter = id;
+    persistCurrentBook();
+  }
+}
+
+function goToChapterAnchor(chapterId, anchorId) {
+  showChapter(chapterId), closeSidebar();
+  anchorId && requestAnimationFrame(function() {
+    var page = document.getElementById("page-" + chapterId);
+    if (!page) return;
+    var targetEl = null;
+    try {
+      targetEl = page.querySelector("#" + CSS.escape(anchorId)) || page.querySelector('[name="' + CSS.escape(anchorId) + '"]')
+    } catch (e) {}
+    targetEl && targetEl.scrollIntoView({
+      block: "start"
+    })
+  })
+}
+
+function restoreChapterScroll(id) {
+  var page = document.getElementById("page-" + id),
+    body = page ? page.querySelector(".chapter-body") : null,
+    key = progressKey(id),
+    fraction = state.progress[key] || 0;
+  if (!body || fraction <= 0) return updateChapterMeta(), updateReadingProgress(), void updateSidebarMeta();
+  requestAnimationFrame(function() {
+    var viewportHeight = window.innerHeight,
+      scrollable = body.scrollHeight - viewportHeight;
+    if (scrollable > 0) {
+      var bodyTop = body.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo(0, bodyTop + fraction * scrollable)
+    }
+    requestAnimationFrame(function() {
+      updateChapterMeta(), updateReadingProgress(), updateSidebarMeta()
+    })
+  })
+}
+
+function updateReadingProgress() {
+  var page = document.getElementById("page-" + state.currentChapter);
+  if (page && page.offsetParent) {
+    var body = page.querySelector(".chapter-body");
+    if (body) {
+      var bodyRect = body.getBoundingClientRect(),
+        viewportHeight = window.innerHeight,
+        scrollable = body.scrollHeight - viewportHeight,
+        fraction = scrollable > 0 ? Math.min(1, Math.max(0, -bodyRect.top / scrollable)) : 1,
+        key = progressKey(state.currentChapter);
+      state.progress[key] = fraction, currentBook && saveState();
+      var totalProgress = 0,
+        chapters = $$(".chapter-page"),
+        count = 0;
+      chapters.forEach(function(ch) {
+        var k = progressKey(ch.getAttribute("data-chapter-id"));
+        void 0 !== state.progress[k] ? (totalProgress += state.progress[k], count++) : (totalProgress += 0, count++)
+      }), totalProgress = count > 0 ? totalProgress / count : 0;
+      var progressEl = $("#bookProgress");
+      progressEl && (progressEl.textContent = Math.round(100 * totalProgress) + "% complete"), currentBook && (currentBook.progress = totalProgress, persistCurrentBook()), updateSidebarMeta()
+    }
+  }
+}
+
+function updateChapterMeta() {
+  var page = document.getElementById("page-" + state.currentChapter);
+  if (page) {
+    var body = page.querySelector(".chapter-body"),
+      metaEl = page.querySelector(".chapter-meta");
+    if (body && metaEl) {
+      var words = body.innerText.trim().split(/\s+/).filter(Boolean).length,
+        key = progressKey(state.currentChapter),
+        fraction = state.progress[key] || 0,
+        remaining = Math.max(0, Math.round(words * (1 - fraction))),
+        minsLeft = Math.max(1, Math.round(remaining / state.wpm));
+      metaEl.textContent = words.toLocaleString() + " words · " + minsLeft + " min left"
+    }
+  }
+}
+
+function updateSidebarMeta() {
+  $$(".chapter-page").forEach(function(ch) {
+    var id = ch.getAttribute("data-chapter-id"),
+      meta = document.getElementById("meta-" + id + "-sidebar");
+    if (meta) {
+      var bodyEl = ch.querySelector(".chapter-body");
+      if (bodyEl) {
+        var wordCount = bodyEl.innerText.trim().split(/\s+/).filter(Boolean).length,
+          key = progressKey(id),
+          progress = state.progress[key] || 0;
+        if (id === state.currentChapter) meta.textContent = Math.round(100 * progress) + "%";
+        else {
+          var timeLeft = Math.max(1, Math.round(wordCount / state.wpm));
+          meta.textContent = timeLeft + " min"
+        }
+      }
+    }
+  })
+}
+
+function persistCurrentBook() {
+  if (currentBook) {
+    var list = loadLibraryList(),
+      idx = list.findIndex(function(b) {
+        return b.id === currentBook.id
+      });
+    -1 !== idx && (list[idx] = currentBook, saveLibraryList(list))
+  }
+}
+
+function renderChapterPageHtml(book, chapter, index, total) {
+  var isFirst = 0 === index,
+    isLast = index === total - 1,
+    prevBtn = isFirst ? '<span class="chapter-nav-spacer"></span>' : '<button class="chapter-nav-btn chapter-nav-prev" data-go="' + book.chapters[index - 1].id + '">← Previous Chapter</button>',
+    nextBtn = isLast ? '<span class="chapter-nav-spacer"></span>' : '<button class="chapter-nav-btn chapter-nav-next" data-go="' + book.chapters[index + 1].id + '">Next Chapter →</button>',
+    endHtml = isLast ? '<div class="book-end"><div class="book-end-mark"></div><p class="book-end-text">End of book</p></div>' : "",
+    hasTitle = !!chapter.title,
+    dividerHtml = hasTitle ? '<h2 class="chapter-divider">' + escapeHtml(chapter.title) + "</h2>" : "";
+  return '<section class="chapter-page" id="page-' + chapter.id + '" data-chapter-id="' + chapter.id + '"' + (isFirst ? "" : " hidden") + '><header class="chapter-head' + (hasTitle ? "" : " chapter-head--no-divider") + '"><div class="chapter-byline"><span class="cb-title">' + escapeHtml(book.title) + '</span><span class="cb-by">' + escapeHtml(book.author) + "</span></div>" + dividerHtml + '<p class="chapter-meta" id="meta-' + chapter.id + '">&nbsp;</p></header><div class="chapter-body">' + chapter.html + "</div>" + endHtml + '<nav class="chapter-nav">' + prevBtn + nextBtn + "</nav></section>"
+}
+
+function rerenderChapters(book, keepPosition) {
+  if (document.querySelector(".page main").innerHTML = book.chapters.map(function(ch, i) {
+      return renderChapterPageHtml(book, ch, i, book.chapters.length)
+    }).join(""), chapterList.innerHTML = book.chapters.map(function(ch, i) {
+      return '<li><button class="sidebar-item' + (0 === i ? " is-current" : "") + '" data-target="' + ch.id + '"><span class="sidebar-item-title">' + escapeHtml(ch.title || "Section " + (i + 1)) + '</span><span class="sidebar-item-meta" id="meta-' + ch.id + '-sidebar"></span></button></li>'
+    }).join(""), chapterPages = $$(".chapter-page"), (sidebarItems = $$(".sidebar-item[data-target]")).forEach(function(item) {
+      var chapterId = item.getAttribute("data-target"),
+        titleEl = item.querySelector(".sidebar-item-title");
+      item.addEventListener("click", function(e) {
+        if (!item.classList.contains("is-renaming")) {
+          if (e.target.closest(".sidebar-item-title")) {
+            if (chapterRenameClickTimer) return void(clearTimeout(chapterRenameClickTimer), chapterRenameClickTimer = null);
+            chapterRenameClickTimer = setTimeout(function() {
+              chapterRenameClickTimer = null, showChapter(chapterId), closeSidebar()
+            }, 280);
+            return
+          }
+          showChapter(chapterId), closeSidebar()
+        }
+      }), titleEl && bindChapterTitleDblClick(item, titleEl, chapterId)
+    }), $$(".chapter-nav-btn").forEach(function(btn) {
+      btn.addEventListener("click", function() {
+        showChapter(btn.getAttribute("data-go"))
+      })
+    }), $$("[data-toc-link]").forEach(function(a) {
+      a.addEventListener("click", function(e) {
+        e.preventDefault();
+        var targetId = a.getAttribute("data-goto-chapter");
+        targetId && goToChapterAnchor(targetId, a.getAttribute("data-goto-anchor"))
+      })
+    }), keepPosition) {
+    book.chapters.some(function(c) {
+      return c.id === state.currentChapter
+    }) || (state.currentChapter = book.chapters[0].id)
+  } else {
+    var lastValid = book.lastChapter && book.chapters.some(function(c) {
+      return c.id === book.lastChapter
+    });
+    state.currentChapter = lastValid ? book.lastChapter : book.chapters[0].id
+  }
+  showChapter(state.currentChapter, !0), buildChapterData(), saveState(), applyTitleFont(), applyAuthorFont()
+}
+var chapterData = [],
+  currentFlash = null,
+  flashTimeout = null;
+
+function buildChapterData() {
+  chapterData = [], $$(".chapter-page").forEach(function(page) {
+    var id = page.getAttribute("data-chapter-id"),
+      titleEl = page.querySelector(".chapter-divider"),
+      title = titleEl ? titleEl.textContent.trim() : id,
+      body = page.querySelector(".chapter-body");
+    body && chapterData.push({
+      id: id,
+      title: title,
+      text: body.textContent,
+      element: body
+    })
+  })
+}
+
+function performSearch(query) {
+  if (!query || query.length < 2) return searchCount.textContent = "0 results", void(searchResults.innerHTML = '<div class="search-empty">Type at least 2 characters to search</div>');
+  var regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi"),
+    results = [];
+  if (chapterData.forEach(function(chapter) {
+      for (var match, text = chapter.text, found = !1, matches = [], tempRegex = new RegExp(regex.source, "gi"); null !== (match = tempRegex.exec(text));) {
+        var start = Math.max(0, match.index - 60),
+          end = Math.min(text.length, match.index + match[0].length + 60),
+          highlightedSnippet = text.substring(start, end).replace(regex, function(m) {
+            return "<em>" + m + "</em>"
+          });
+        start > 0 && (highlightedSnippet = "…" + highlightedSnippet), end < text.length && (highlightedSnippet += "…"), matches.push({
+          snippet: highlightedSnippet,
+          matchText: match[0]
+        }), found = !0
+      }
+      found && results.push({
+        chapterId: chapter.id,
+        chapterTitle: chapter.title,
+        matches: matches
+      })
+    }), 0 === results.length) return searchCount.textContent = "0 results", void(searchResults.innerHTML = '<div class="search-empty">No results found for "' + escapeHtml(query) + '"</div>');
+  var totalMatches = 0;
+  results.forEach(function(r) {
+    totalMatches += r.matches.length
+  }), searchCount.textContent = totalMatches + " result" + (totalMatches > 1 ? "s" : "");
+  var html = "";
+  results.forEach(function(result) {
+    result.matches.forEach(function(match) {
+      html += '<div class="search-result-item" data-chapter="' + result.chapterId + '" data-query="' + escapeHtml(query) + '">', html += '<div class="search-result-chapter">' + (result.chapterTitle || "Untitled section") + "</div>", html += '<div class="search-result-snippet">' + match.snippet + "</div>", html += "</div>"
+    })
+  }), searchResults.innerHTML = html, searchResults.querySelectorAll(".search-result-item").forEach(function(item) {
+    item.addEventListener("click", function() {
+      var chapterId = this.getAttribute("data-chapter"),
+        query = this.getAttribute("data-query") || searchInput.value;
+      closeSearch(), showChapter(chapterId), setTimeout(function() {
+        var bodyEl = document.querySelector("#page-" + chapterId + " .chapter-body");
+        bodyEl && highlightAndScrollToMatch(query, bodyEl)
+      }, 350)
+    })
+  })
+}
+
+function highlightAndScrollToMatch(query, container) {
+  if (currentFlash) {
+    try {
+      var parent = currentFlash.parentNode;
+      if (parent) {
+        var textNode = document.createTextNode(currentFlash.textContent);
+        parent.replaceChild(textNode, currentFlash), parent.normalize()
+      }
+    } catch (e) {}
+    currentFlash = null
+  }
+  if (flashTimeout && (clearTimeout(flashTimeout), flashTimeout = null), query && !(query.length < 2))
+    for (var node, regex = new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, !1); node = walker.nextNode();) {
+      var text = node.textContent,
+        match = regex.exec(text);
+      if (match) {
+        var span = document.createElement("span");
+        span.className = "flash-highlight", span.textContent = match[0];
+        var before = text.substring(0, match.index),
+          after = text.substring(match.index + match[0].length),
+          fragment = document.createDocumentFragment();
+        before && fragment.appendChild(document.createTextNode(before)), fragment.appendChild(span), after && fragment.appendChild(document.createTextNode(after)), node.parentNode.replaceChild(fragment, node), currentFlash = span, span.scrollIntoView({
+          block: "center",
+          behavior: "smooth"
+        }), flashTimeout = setTimeout(function() {
+          if (span && span.parentNode) {
+            var parent = span.parentNode,
+              textNode = document.createTextNode(span.textContent);
+            parent.replaceChild(textNode, span), parent.normalize(), currentFlash = null
+          }
+          flashTimeout = null
+        }, 2200);
+        break
+      }
+    }
+}
+var searchPanel = $("#searchPanel"),
+  searchOverlay = $("#searchOverlay"),
+  searchInput = $("#searchInput"),
+  searchCount = $("#searchCount"),
+  searchResults = $("#searchResults"),
+  searchClose = $("#searchClose"),
+  searchToggle = $("#searchToggle");
+
+function openSearch() {
+  closeSettings(), closeSidebar(), searchPanel.classList.add("is-open"), searchOverlay.classList.add("is-open"), searchToggle.classList.add("is-active"), buildChapterData(), setTimeout(function() {
+    searchInput.focus()
+  }, 100)
+}
+
+function closeSearch() {
+  if (searchPanel.classList.remove("is-open"), searchOverlay.classList.remove("is-open"), searchToggle.classList.remove("is-active"), searchInput.value = "", searchCount.textContent = "0 results", searchResults.innerHTML = '<div class="search-empty">Type at least 2 characters to search</div>', currentFlash) {
+    try {
+      var parent = currentFlash.parentNode;
+      if (parent) {
+        var textNode = document.createTextNode(currentFlash.textContent);
+        parent.replaceChild(textNode, currentFlash), parent.normalize()
+      }
+    } catch (e) {}
+    currentFlash = null
+  }
+  flashTimeout && (clearTimeout(flashTimeout), flashTimeout = null)
+}
+searchToggle.addEventListener("click", function(e) {
+  e.stopPropagation(), searchPanel.classList.contains("is-open") ? closeSearch() : openSearch()
+}), searchClose.addEventListener("click", closeSearch), searchOverlay.addEventListener("click", closeSearch), searchInput.addEventListener("input", function() {
+  performSearch(this.value)
+}), searchInput.addEventListener("keydown", function(e) {
+  "Escape" === e.key && closeSearch()
+}), document.addEventListener("keydown", function(e) {
+  (e.ctrlKey || e.metaKey) && "f" === e.key && (e.preventDefault(), searchPanel.classList.contains("is-open") ? (searchInput.focus(), searchInput.select()) : openSearch()), "Escape" === e.key && searchPanel.classList.contains("is-open") && closeSearch()
+});
+var sidebar = $("#sidebar"),
+  sidebarBackdrop = $("#sidebarBackdrop"),
+  sidebarToggle = $("#sidebarToggle"),
+  chapterList = $("#chapterList");
+
+function openSidebar() {
+  closeSettings(), closeSearch(), sidebar.classList.add("is-open"), sidebarBackdrop.classList.add("is-open")
+}
+
+function closeSidebar() {
+  sidebar.classList.remove("is-open"), settingsPanel.classList.contains("is-open") || sidebarBackdrop.classList.remove("is-open")
+}
+sidebarToggle.addEventListener("click", function(e) {
+  e.stopPropagation(), sidebar.classList.contains("is-open") ? closeSidebar() : openSidebar()
+}), sidebarItems.forEach(function(item) {
+  item.addEventListener("click", function() {
+    showChapter(item.getAttribute("data-target")), closeSidebar()
+  })
+});
+var sidebarLabelToggle = $("#sidebarLabelToggle"),
+  sidebarLabelMenu = $("#sidebarLabelMenu"),
+  sidebarLabelText = $("#sidebarLabelText"),
+  sidebarSwitchItem = $("#sidebarSwitchItem"),
+  mediaView = $("#mediaView"),
+  mediaGrid = $("#mediaGrid"),
+  mediaEmpty = $("#mediaEmpty"),
+  mediaCount = $("#mediaCount"),
+  sidebarView = "contents";
+
+function renderMedia(images) {
+  if (mediaCount.textContent = images.length, 0 === images.length) return mediaGrid.innerHTML = "", mediaEmpty.hidden = !1, void(mediaGrid.hidden = !0);
+  mediaGrid.innerHTML = images.map(function(img) {
+    return '<button class="sidebar-media-tile" type="button"><span class="sidebar-media-thumb" style="background-image:url(&quot;' + img.dataUrl + '&quot;);"></span><span class="sidebar-media-caption">' + escapeHtml(img.caption) + "</span></button>"
+  }).join(""), mediaGrid.querySelectorAll(".sidebar-media-tile").forEach(function(tile, i) {
+    tile.addEventListener("click", function() {
+      openMediaLightbox(images[i].dataUrl)
+    })
+  }), mediaEmpty.hidden = !0, mediaGrid.hidden = !1, renderSidebarView()
+}
+var mediaLightboxOverlay = $("#mediaLightboxOverlay"),
+  mediaLightbox = $("#mediaLightbox"),
+  mediaLightboxImg = $("#mediaLightboxImg");
+
+function openMediaLightbox(src) {
+  mediaLightboxImg.src = src, mediaLightboxOverlay.classList.add("is-open"), mediaLightbox.classList.add("is-open")
+}
+
+function closeMediaLightbox() {
+  mediaLightboxOverlay.classList.remove("is-open"), mediaLightbox.classList.remove("is-open")
+}
+
+function renderSidebarView() {
+  var showingMedia = "media" === sidebarView;
+  if (sidebarLabelText.textContent = showingMedia ? "Media" : "Contents", sidebarSwitchItem.textContent = showingMedia ? "Contents" : "Media", chapterList.hidden = showingMedia, mediaView.hidden = !showingMedia, showingMedia) {
+    var hasImages = mediaGrid.children.length > 0;
+    mediaEmpty.hidden = hasImages, mediaGrid.hidden = !hasImages
+  }
+}
+mediaLightboxOverlay.addEventListener("click", closeMediaLightbox), mediaLightbox.addEventListener("click", closeMediaLightbox), document.addEventListener("keydown", function(e) {
+  "Escape" === e.key && mediaLightbox.classList.contains("is-open") && closeMediaLightbox()
+}), sidebarLabelToggle.addEventListener("click", function() {
+  var isOpen = "true" === this.getAttribute("aria-expanded");
+  this.setAttribute("aria-expanded", isOpen ? "false" : "true"), sidebarLabelMenu.style.display = isOpen ? "none" : "block"
+}), sidebarSwitchItem.addEventListener("click", function() {
+  sidebarView = "contents" === sidebarView ? "media" : "contents", renderSidebarView(), sidebarLabelMenu.style.display = "none", sidebarLabelToggle.setAttribute("aria-expanded", "false")
+});
+
+function renameChapter(ch, newTitle) {
+  ch.title = newTitle;
+  var headEl = document.querySelector("#page-" + ch.id + " .chapter-head"),
+    dividerEl = document.querySelector("#page-" + ch.id + " .chapter-divider");
+  if (newTitle) {
+    if (dividerEl) dividerEl.textContent = newTitle;
+    else if (headEl) {
+      var newDivider = document.createElement("h2");
+      newDivider.className = "chapter-divider", newDivider.textContent = newTitle;
+      var metaEl = headEl.querySelector(".chapter-meta");
+      metaEl ? headEl.insertBefore(newDivider, metaEl) : headEl.appendChild(newDivider), headEl.classList.remove("chapter-head--no-divider")
+    }
+  } else {
+    dividerEl && dividerEl.remove(), headEl && headEl.classList.add("chapter-head--no-divider")
+  }
+  currentBook && state.currentChapter === ch.id && !document.body.classList.contains("library-open") && updateReaderDocumentTitle(), persistCurrentBook()
+}
+var chapterRenameClickTimer = null;
+
+function bindChapterTitleDblClick(item, titleEl, chapterId) {
+  titleEl.addEventListener("dblclick", function(e) {
+    e.preventDefault(), e.stopPropagation(), chapterRenameClickTimer && (clearTimeout(chapterRenameClickTimer), chapterRenameClickTimer = null), startChapterRename(item, titleEl, chapterId)
+  })
+}
+
+function startChapterRename(item, titleEl, chapterId) {
+  if (!currentBook || item.classList.contains("is-renaming")) return;
+  var chIndex = currentBook.chapters.findIndex(function(c) {
+    return c.id === chapterId
+  });
+  if (-1 === chIndex) return;
+  var ch = currentBook.chapters[chIndex];
+  void 0 === ch.originalTitle && (ch.originalTitle = ch.title);
+  item.classList.add("is-renaming");
+  var input = document.createElement("input");
+  input.type = "text", input.className = "sidebar-item-title-input", input.value = ch.title, titleEl.replaceWith(input), input.focus(), input.select();
+
+  function finish(commit) {
+    input.removeEventListener("keydown", onKeydown), input.removeEventListener("blur", onBlur);
+    var finalValue = commit ? input.value.trim() || ch.originalTitle || "" : ch.title;
+    finalValue !== ch.title && renameChapter(ch, finalValue);
+    var displayTitle = ch.title || "Section " + (chIndex + 1),
+      newTitleEl = document.createElement("span");
+    newTitleEl.className = "sidebar-item-title", newTitleEl.textContent = displayTitle, input.replaceWith(newTitleEl), item.classList.remove("is-renaming"), bindChapterTitleDblClick(item, newTitleEl, chapterId)
+  }
+
+  function onKeydown(e) {
+    "Enter" === e.key ? (e.preventDefault(), finish(!0)) : "Escape" === e.key && (e.preventDefault(), finish(!1))
+  }
+
+  function onBlur() {
+    finish(!0)
+  }
+  input.addEventListener("keydown", onKeydown), input.addEventListener("blur", onBlur)
+}
+var settingsPanel = $("#settingsPanel"),
+  settingsToggle = $("#settingsToggle"),
+  settingsClose = $("#settingsClose");
+
+function openSettings() {
+  closeSidebar(), closeSearch(), settingsPanel.classList.add("is-open"), sidebarBackdrop.classList.add("is-open"), settingsToggle.classList.add("is-active")
+}
+
+function closeSettings() {
+  settingsPanel.classList.remove("is-open"), sidebar.classList.contains("is-open") || sidebarBackdrop.classList.remove("is-open"), settingsToggle.classList.remove("is-active")
+}
+settingsToggle.addEventListener("click", function(e) {
+  e.stopPropagation(), settingsPanel.classList.contains("is-open") ? closeSettings() : openSettings()
+}), settingsClose.addEventListener("click", closeSettings), sidebarBackdrop.addEventListener("click", function() {
+  closeSidebar(), closeSettings()
+});
+var libraryToggle = $("#libraryToggle"),
+  libraryView = $("#libraryView"),
+  libraryAddBtn = $("#libraryAddBtn"),
+  libraryFileInput = $("#libraryFileInput"),
+  libraryBody = $("#libraryBody"),
+  librarySearchInput = $("#librarySearchInput"),
+  libraryHeader = $("#libraryHeader"),
+  librarySortBtn = $("#librarySortBtn"),
+  sortDropdown = $("#sortDropdown"),
+  libraryBackBtn = $("#libraryBackBtn"),
+  libraryLabelText = $("#libraryLabelText"),
+  currentGroupFilter = null,
+  GROUP_NAMES_KEY = "reader_group_names",
+  DEFAULT_GROUP_NAMES = {
+    recent: "Recently Read",
+    complete: "Completed"
+  };
+
+function loadGroupNames() {
+  try {
+    return JSON.parse(localStorage.getItem(GROUP_NAMES_KEY)) || {}
+  } catch (e) {
+    return {}
+  }
+}
+
+function saveGroupNames(map) {
+  try {
+    localStorage.setItem(GROUP_NAMES_KEY, JSON.stringify(map))
+  } catch (e) {}
+}
+
+function groupName(key) {
+  var names = loadGroupNames();
+  return names[key] || DEFAULT_GROUP_NAMES[key] || "Group"
+}
+
+function getGroupBooks(list, key) {
+  return "recent" === key ? list.filter(function(b) {
+    return "reading" === b.status || "complete" === b.status
+  }).slice().sort(function(a, b) {
+    return (b.lastOpened || 0) - (a.lastOpened || 0)
+  }).slice(0, 10) : "complete" === key ? list.filter(function(b) {
+    return "complete" === b.status
+  }).slice().sort(function(a, b) {
+    return (b.completedAt || b.lastOpened || 0) - (a.completedAt || a.lastOpened || 0)
+  }) : list.filter(function(b) {
+    return (b.customGroups || []).indexOf(key) !== -1
+  }).slice().sort(function(a, b) {
+    return (b.lastOpened || 0) - (a.lastOpened || 0)
+  })
+}
+
+function isCustomGroupKey(key) {
+  return !!key && "recent" !== key && "complete" !== key
+}
+
+function listCustomGroupKeys(list) {
+  var keys = [];
+  return list.forEach(function(b) {
+    (b.customGroups || []).forEach(function(k) {
+      -1 === keys.indexOf(k) && keys.push(k)
+    })
+  }), keys
+}
+
+function buildGroups(list) {
+  var groups = [],
+    recentBooks = getGroupBooks(list, "recent"),
+    completeBooks = getGroupBooks(list, "complete");
+  recentBooks.length && groups.push({
+    key: "recent",
+    books: recentBooks
+  }), completeBooks.length && groups.push({
+    key: "complete",
+    books: completeBooks
+  });
+  return listCustomGroupKeys(list).forEach(function(key) {
+    var books = getGroupBooks(list, key);
+    books.length && groups.push({
+      key: key,
+      books: books
+    })
+  }), groups
+}
+
+function renderGroupTile(key, books) {
+  var covers = books.slice(0, 2),
+    layersHtml = "";
+  covers.length >= 2 && (layersHtml += '<div class="group-tile-card layer-1"></div>');
+  var front = covers[0],
+    frontInner = front.cover ? '<img src="' + front.cover + '" alt="">' : '<div class="placeholder">' + escapeHtml((front.title || "?").charAt(0).toUpperCase()) + "</div>";
+  return layersHtml += '<div class="group-tile-card layer-0">' + frontInner + "</div>", '<div class="group-tile" data-group="' + key + '" role="button" tabindex="0"><div class="group-tile-stack"><span class="group-tile-count">' + books.length + '</span>' + layersHtml + '</div><div class="group-tile-label">' + escapeHtml(groupName(key)) + '</div><div class="group-tile-sub">' + books.length + (1 === books.length ? " book" : " books") + "</div></div>"
+}
+
+function renderShelfHtml(list) {
+  var groups = buildGroups(list);
+  if (!groups.length) return "";
+  var tiles = groups.map(function(g) {
+    return renderGroupTile(g.key, g.books)
+  }).join("");
+  return '<div class="library-shelf"><div class="library-shelf-row-wrap"><button aria-label="Scroll left" class="shelf-arrow shelf-arrow-left" id="shelfArrowLeft" type="button"><svg fill="none" viewbox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></button><div class="library-shelf-row" id="libraryShelfRow">' + tiles + '</div><button aria-label="Scroll right" class="shelf-arrow shelf-arrow-right is-visible" id="shelfArrowRight" type="button"><svg fill="none" viewbox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></button></div></div>'
+}
+
+function updateLibraryHeader() {
+  currentGroupFilter ? (libraryBackBtn.hidden = !1, libraryLabelText.textContent = groupName(currentGroupFilter), libraryLabelText.classList.add("is-editable"), libraryAddBtn.style.display = "none") : (libraryBackBtn.hidden = !0, libraryLabelText.textContent = "Library", libraryLabelText.classList.remove("is-editable"), libraryAddBtn.style.display = "")
+}
+
+function enterGroup(key) {
+  currentGroupFilter = key, renderLibrary(), libraryBody.scrollTop = 0, document.title = groupName(key)
+}
+
+function exitGroup() {
+  currentGroupFilter = null, renderLibrary(), libraryBody.scrollTop = 0, document.title = "Library"
+}
+
+function openLibrary() {
+  closeSidebar(), closeSettings(), closeSearch(), document.body.classList.add("library-open"), libraryToggle.classList.add("is-active"), renderLibrary(), document.title = currentGroupFilter ? groupName(currentGroupFilter) : "Library", state.libraryOpen = !0, saveState()
+}
+
+function updateReaderDocumentTitle() {
+  if (!currentBook) return void(document.title = "Reader");
+  var titleCh = currentBook.chapters.find(function(c) {
+    return c.id === state.currentChapter;
+  });
+  var chTitle = titleCh && titleCh.title ? titleCh.title.trim() : "";
+  document.title = chTitle ? (currentBook.title || "Reader") + " - " + chTitle : (currentBook.title || "Reader")
+}
+
+function closeLibrary() {
+  document.body.classList.remove("library-open"), libraryToggle.classList.remove("is-active"), currentGroupFilter = null, exitSelectionMode(), updateReaderDocumentTitle(), state.libraryOpen = !1, saveState()
+}
+
+function findBook(id) {
+  return loadLibraryList().find(function(b) {
+    return b.id === id
+  })
+}
+
+function loadBook(book) {
+  currentBook = book, state.lastOpenBookId = book.id, saveState(), document.title = book.title || "Reader", "complete" !== book.status && updateReadingStatus(book.id, "reading"), $("#bookTitle").textContent = book.title, $("#bookAuthor").textContent = book.author || "";
+  var coverEl = $("#bookCover");
+
+  function tryRestore() {
+    var page = document.getElementById("page-" + state.currentChapter);
+    page ? page.hidden ? requestAnimationFrame(tryRestore) : restoreChapterScroll(state.currentChapter) : requestAnimationFrame(tryRestore)
+  }
+  book.cover ? (coverEl.style.backgroundImage = 'url("' + book.cover + '")', coverEl.style.backgroundSize = "cover", coverEl.style.backgroundPosition = "center", coverEl.innerHTML = "") : (coverEl.style.backgroundImage = "", coverEl.innerHTML = "<span>" + escapeHtml((book.title || "?").charAt(0).toUpperCase()) + "</span>"), renderMedia(book.images || []), rerenderChapters(book, !1), setTimeout(function() {
+    requestAnimationFrame(tryRestore)
+  }, 50)
+}
+
+function updateReadingStatus(bookId, status) {
+  var list = loadLibraryList(),
+    book = list.find(function(b) {
+      return b.id === bookId
+    });
+  book && (book.status = status, book.lastOpened = Date.now(), "complete" === status && (book.completedAt = Date.now()), saveLibraryList(list), document.body.classList.contains("library-open") && renderLibrary())
+}
+
+function renderLibraryTile(book) {
+  var coverHtml = book.cover ? '<img src="' + book.cover + '" alt="' + escapeHtml(book.title) + '">' : '<div class="placeholder">' + escapeHtml((book.title || "?").charAt(0).toUpperCase()) + "</div>",
+    statusBadge = "";
+  "reading" === book.status ? statusBadge = '<span class="status-badge">Reading</span>' : "complete" === book.status && (statusBadge = '<span class="status-badge status-badge-complete">Complete</span>');
+  var pct = Math.round(100 * (book.progress || 0)),
+    progressHtml = pct > 0 ? '<div class="cover-progress"><div class="cover-progress-fill" style="width:' + pct + '%"></div></div>' : "",
+    isSelected = selectedBookIds.has(book.id),
+    selectClass = selectionMode ? " is-selecting" + (isSelected ? " is-selected" : "") : "",
+    checkHtml = selectionMode ? '<span class="library-tile-check' + (isSelected ? " is-checked" : "") + '"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></span>' : "";
+  return '<div class="library-tile' + selectClass + '" data-book-id="' + book.id + '">' + coverHtml + statusBadge + progressHtml + checkHtml + '<button class="library-tile-info-btn" data-book-id="' + book.id + '" aria-label="Book info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.5" stroke-width="1.6"/><line x1="12" y1="11" x2="12" y2="16.5" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="7.5" r="1.1" fill="currentColor" stroke="none"/></svg></button></div>'
+}
+
+function renderLibrary() {
+  var allBooks = loadLibraryList(),
+    query = (librarySearchInput.value || "").trim().toLowerCase();
+  var sortFn = function(sortType) {
+      switch (sortType) {
+        case "title":
+          return function(a, b) {
+            return (a.title || "").localeCompare(b.title || "")
+          };
+        case "author":
+          return function(a, b) {
+            return (a.author || "").localeCompare(b.author || "")
+          };
+        default:
+          return function(a, b) {
+            return (b.lastOpened || 0) - (a.lastOpened || 0)
+          }
+      }
+    }(currentSort),
+    baseList = currentGroupFilter ? getGroupBooks(allBooks, currentGroupFilter) : allBooks.filter(function(b) {
+      return "complete" !== b.status
+    }),
+    sortedBooks = baseList.slice().sort(sortFn),
+    filtered = query ? sortedBooks.filter(function(b) {
+      return -1 !== (b.title + " " + (b.author || "")).toLowerCase().indexOf(query)
+    }) : sortedBooks,
+    gridHtml = "";
+  gridHtml = 0 === allBooks.length ? '<div class="library-empty">Your library is empty. Add a book to get started.</div>' : 0 === filtered.length && query ? '<div class="library-grid-empty">No books match your search.</div>' : 0 === baseList.length ? '<div class="library-empty">' + (currentGroupFilter ? "No books in this group yet." : "All caught up — every book is marked complete.") + "</div>" : '<div class="library-grid">' + filtered.map(function(b) {
+    return renderLibraryTile(b)
+  }).join("") + "</div>";
+  var shelfHtml = currentGroupFilter ? "" : renderShelfHtml(allBooks);
+  libraryBody.innerHTML = shelfHtml + gridHtml, libraryBody.querySelectorAll(".library-tile").forEach(function(tile) {
+    var bookId = tile.getAttribute("data-book-id"),
+      longPressTimer = null,
+      longPressFired = !1,
+      pressStartX = 0,
+      pressStartY = 0;
+
+    function clearLongPress() {
+      longPressTimer && (clearTimeout(longPressTimer), longPressTimer = null)
+    }
+    tile.addEventListener("pointerdown", function(e) {
+      0 === e.button && (longPressFired = !1, pressStartX = e.clientX, pressStartY = e.clientY, clearLongPress(), longPressTimer = setTimeout(function() {
+        longPressFired = !0, enterSelectionMode(bookId)
+      }, 500))
+    }), tile.addEventListener("pointermove", function(e) {
+      (Math.abs(e.clientX - pressStartX) > 10 || Math.abs(e.clientY - pressStartY) > 10) && clearLongPress()
+    }), tile.addEventListener("pointerup", clearLongPress), tile.addEventListener("pointercancel", clearLongPress), tile.addEventListener("pointerleave", clearLongPress), tile.addEventListener("click", function(e) {
+      if (longPressFired) return longPressFired = !1, void e.preventDefault();
+      if (selectionMode) return e.preventDefault(), void toggleBookSelection(bookId);
+      var book = findBook(bookId);
+      book && (closeLibrary(), requestAnimationFrame(function() {
+        loadBook(book)
+      }))
+    })
+  }), libraryBody.querySelectorAll(".library-tile-info-btn").forEach(function(btn) {
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      if (selectionMode) return;
+      var book = findBook(btn.getAttribute("data-book-id"));
+      book && openBookInfo(book)
+    })
+  });
+  var shelfRow = $("#libraryShelfRow");
+  if (shelfRow) {
+    libraryBody.querySelectorAll(".group-tile").forEach(function(tile) {
+      var groupKey = tile.getAttribute("data-group"),
+        tileLongPressTimer = null,
+        tileLongPressFired = !1,
+        tilePressX = 0,
+        tilePressY = 0;
+
+      function clearTileLongPress() {
+        tileLongPressTimer && (clearTimeout(tileLongPressTimer), tileLongPressTimer = null)
+      }
+      isCustomGroupKey(groupKey) && (tile.addEventListener("pointerdown", function(e) {
+        0 === e.button && (tileLongPressFired = !1, tilePressX = e.clientX, tilePressY = e.clientY, clearTileLongPress(), tileLongPressTimer = setTimeout(function() {
+          tileLongPressFired = !0, openGroupDeleteConfirm(groupKey)
+        }, 500))
+      }), tile.addEventListener("pointermove", function(e) {
+        (Math.abs(e.clientX - tilePressX) > 10 || Math.abs(e.clientY - tilePressY) > 10) && clearTileLongPress()
+      }), tile.addEventListener("pointerup", clearTileLongPress), tile.addEventListener("pointercancel", clearTileLongPress), tile.addEventListener("pointerleave", clearTileLongPress)), tile.addEventListener("click", function() {
+        if (tileLongPressFired) return void(tileLongPressFired = !1);
+        selectionMode || enterGroup(groupKey)
+      }), tile.addEventListener("keydown", function(e) {
+        "Enter" !== e.key && " " !== e.key || selectionMode || (e.preventDefault(), enterGroup(groupKey))
+      })
+    });
+    var arrowLeft = $("#shelfArrowLeft"),
+      arrowRight = $("#shelfArrowRight"),
+      updateArrows = function() {
+        var maxScroll = shelfRow.scrollWidth - shelfRow.clientWidth;
+        arrowLeft.classList.toggle("is-visible", shelfRow.scrollLeft > 8), arrowRight.classList.toggle("is-visible", shelfRow.scrollLeft < maxScroll - 8)
+      };
+    updateArrows(), shelfRow.addEventListener("scroll", updateArrows), window.addEventListener("resize", updateArrows), arrowLeft.addEventListener("click", function() {
+      shelfRow.scrollBy({
+        left: -280,
+        behavior: "smooth"
+      })
+    }), arrowRight.addEventListener("click", function() {
+      shelfRow.scrollBy({
+        left: 280,
+        behavior: "smooth"
+      })
+    })
+  }
+  updateLibraryHeader(), updateSelectionBar()
+}
+
+var selectionMode = !1,
+  selectedBookIds = new Set,
+  librarySelectionBar = $("#librarySelectionBar"),
+  selectionCount = $("#selectionCount"),
+  selectionCancelBtn = $("#selectionCancelBtn"),
+  selectionStatusBtns = $$(".selection-status-btn"),
+  selectionGroupBtn = $("#selectionGroupBtn"),
+  selectionRemoveGroupBtn = $("#selectionRemoveGroupBtn"),
+  selectionDeleteBtn = $("#selectionDeleteBtn"),
+  groupPickerPanel = $("#groupPickerPanel"),
+  groupPickerList = $("#groupPickerList"),
+  groupPickerNewInput = $("#groupPickerNewInput"),
+  groupPickerCreateBtn = $("#groupPickerCreateBtn"),
+  groupDeleteOverlay = $("#groupDeleteOverlay"),
+  groupDeleteModal = $("#groupDeleteModal"),
+  groupDeleteCancel = $("#groupDeleteCancel"),
+  groupDeleteConfirm = $("#groupDeleteConfirm"),
+  groupDeleteTarget = null;
+
+function openGroupDeleteConfirm(key) {
+  groupDeleteTarget = key, groupDeleteOverlay.classList.add("is-open"), groupDeleteModal.classList.add("is-open")
+}
+
+function closeGroupDeleteConfirm() {
+  groupDeleteTarget = null, groupDeleteOverlay.classList.remove("is-open"), groupDeleteModal.classList.remove("is-open")
+}
+
+function deleteGroup(key) {
+  var list = loadLibraryList();
+  list.forEach(function(b) {
+    if (b.customGroups) {
+      var idx = b.customGroups.indexOf(key); -1 !== idx && (b.customGroups.splice(idx, 1), currentBook && currentBook.id === b.id && (currentBook.customGroups = b.customGroups))
+    }
+  }), saveLibraryList(list);
+  var names = loadGroupNames();
+  delete names[key], saveGroupNames(names), currentGroupFilter === key && (currentGroupFilter = null, document.title = "Library"), showToast("Group deleted."), renderLibrary()
+}
+groupDeleteCancel.addEventListener("click", closeGroupDeleteConfirm), groupDeleteOverlay.addEventListener("click", closeGroupDeleteConfirm), groupDeleteConfirm.addEventListener("click", function() {
+  groupDeleteTarget && (deleteGroup(groupDeleteTarget), closeGroupDeleteConfirm())
+});
+
+function updateSelectionBar() {
+  var n = selectedBookIds.size;
+  if (!selectionMode || 0 === n) return librarySelectionBar.classList.remove("is-open"), void closeGroupPicker();
+  selectionCount.textContent = n + (1 === n ? " selected" : " selected"), librarySelectionBar.classList.add("is-open"), selectionRemoveGroupBtn.hidden = !isCustomGroupKey(currentGroupFilter)
+}
+
+function enterSelectionMode(bookId) {
+  selectionMode = !0, selectedBookIds.clear(), bookId && selectedBookIds.add(bookId), renderLibrary()
+}
+
+function toggleBookSelection(bookId) {
+  selectedBookIds.has(bookId) ? selectedBookIds.delete(bookId) : selectedBookIds.add(bookId), 0 === selectedBookIds.size ? exitSelectionMode() : renderLibrary()
+}
+
+function exitSelectionMode() {
+  (selectionMode || selectedBookIds.size) && (selectionMode = !1, selectedBookIds.clear(), closeGroupPicker(), renderLibrary())
+}
+
+function closeGroupPicker() {
+  groupPickerPanel && (groupPickerPanel.hidden = !0, groupPickerNewInput && (groupPickerNewInput.value = ""))
+}
+
+function openGroupPicker() {
+  var allBooks = loadLibraryList(),
+    keys = listCustomGroupKeys(allBooks);
+  groupPickerList.innerHTML = keys.length ? keys.map(function(k) {
+    return '<button class="group-picker-item" data-group-key="' + escapeHtml(k) + '" type="button">' + escapeHtml(groupName(k)) + "</button>"
+  }).join("") : '<div class="group-picker-empty">No groups yet — create one below.</div>', groupPickerPanel.hidden = !1, groupPickerNewInput.focus()
+}
+
+function bulkSetStatus(status) {
+  var list = loadLibraryList(),
+    n = 0;
+  list.forEach(function(b) {
+    selectedBookIds.has(b.id) && (b.status = status, b.lastOpened = Date.now(), "complete" === status && (b.completedAt = Date.now()), currentBook && currentBook.id === b.id && (currentBook.status = status, "complete" === status && (currentBook.completedAt = b.completedAt)), n++)
+  }), saveLibraryList(list), showToast("Marked " + n + (1 === n ? " book" : " books") + " as " + status + "."), exitSelectionMode()
+}
+
+function bulkAddToGroup(key) {
+  var list = loadLibraryList(),
+    n = 0;
+  list.forEach(function(b) {
+    if (selectedBookIds.has(b.id)) {
+      b.customGroups = b.customGroups || [];
+      var idx = b.customGroups.indexOf(key); -1 === idx && (b.customGroups.push(key), n++), currentBook && currentBook.id === b.id && (currentBook.customGroups = b.customGroups)
+    }
+  }), saveLibraryList(list), showToast("Added " + n + (1 === n ? " book" : " books") + ' to "' + groupName(key) + '".'), exitSelectionMode()
+}
+
+function bulkCreateGroup(name) {
+  name = (name || "").trim();
+  if (!name) return;
+  var key = "custom-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    names = loadGroupNames();
+  names[key] = name, saveGroupNames(names), bulkAddToGroup(key)
+}
+
+function bulkRemoveFromGroup() {
+  if (!isCustomGroupKey(currentGroupFilter)) return;
+  var key = currentGroupFilter,
+    list = loadLibraryList(),
+    n = 0;
+  list.forEach(function(b) {
+    if (selectedBookIds.has(b.id) && b.customGroups) {
+      var idx = b.customGroups.indexOf(key); -1 !== idx && (b.customGroups.splice(idx, 1), n++, currentBook && currentBook.id === b.id && (currentBook.customGroups = b.customGroups))
+    }
+  }), saveLibraryList(list), showToast("Removed " + n + (1 === n ? " book" : " books") + " from this group."), exitSelectionMode()
+}
+
+function bulkDelete() {
+  var n = selectedBookIds.size;
+  if (window.confirm("Delete " + n + (1 === n ? " book" : " books") + "? This can\u2019t be undone.")) {
+    var list = loadLibraryList().filter(function(b) {
+      return !selectedBookIds.has(b.id)
+    }),
+      deletedCurrent = currentBook && selectedBookIds.has(currentBook.id);
+    saveLibraryList(list), showToast("Deleted " + n + (1 === n ? " book" : " books") + "."), exitSelectionMode(), deletedCurrent && (currentBook = null, state.lastOpenBookId = null, saveState())
+  }
+}
+selectionCancelBtn.addEventListener("click", function() {
+  exitSelectionMode()
+}), selectionStatusBtns.forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    bulkSetStatus(btn.getAttribute("data-status"))
+  })
+}), selectionDeleteBtn.addEventListener("click", bulkDelete), selectionRemoveGroupBtn.addEventListener("click", bulkRemoveFromGroup), selectionGroupBtn.addEventListener("click", function() {
+  groupPickerPanel.hidden ? openGroupPicker() : closeGroupPicker()
+}), groupPickerList.addEventListener("click", function(e) {
+  var btn = e.target.closest(".group-picker-item");
+  btn && bulkAddToGroup(btn.getAttribute("data-group-key"))
+}), groupPickerCreateBtn.addEventListener("click", function() {
+  bulkCreateGroup(groupPickerNewInput.value)
+}), groupPickerNewInput.addEventListener("keydown", function(e) {
+  "Enter" === e.key && (e.preventDefault(), bulkCreateGroup(groupPickerNewInput.value))
+});
+
+function resolveHref(dir, href) {
+  var parts = (dir + href).split("/"),
+    out = [];
+  return parts.forEach(function(part) {
+    "." !== part && "" !== part && (".." === part ? out.pop() : out.push(part))
+  }), out.join("/")
+}
+
+function zipFileLookup(zip, href) {
+  if (!href) return null;
+  var f = zip.file(href);
+  if (f) return f;
+  try {
+    var decoded = decodeURIComponent(href);
+    if (f = zip.file(decoded)) return f
+  } catch (e) {}
+  for (var lower = href.toLowerCase(), keys = Object.keys(zip.files), i = 0; i < keys.length; i++)
+    if (keys[i].toLowerCase() === lower) return zip.file(keys[i]);
+  return null
+}
+
+function textWordCount(html) {
+  var tmp = document.createElement("div");
+  return tmp.innerHTML = html, (tmp.textContent || "").trim().split(/\s+/).filter(Boolean).length
+}
+
+function isGenericChapterTitle(t) {
+  if (!t) return !0;
+  var s = t.trim().toLowerCase();
+  return !s || (!!/^(chapter|part)\s*\d+$/.test(s) || -1 !== ["contents", "table of contents", "copyright", "title page", "cover", "colophon", "imprint"].indexOf(s))
+}
+libraryToggle.addEventListener("click", function(e) {
+  e.stopPropagation(), document.body.classList.contains("library-open") ? closeLibrary() : openLibrary()
+}), libraryBody.addEventListener("scroll", function() {
+  var scrollY = this.scrollTop;
+  scrollY > 80 && !isLibraryScrolled ? (isLibraryScrolled = !0, libraryHeader.classList.add("is-hidden")) : scrollY <= 80 && isLibraryScrolled && (isLibraryScrolled = !1, libraryHeader.classList.remove("is-hidden"))
+}), librarySortBtn.addEventListener("click", function(e) {
+  e.stopPropagation(), sortDropdown.classList.toggle("is-open")
+}), sortDropdown.addEventListener("click", function(e) {
+  var btn = e.target.closest("button[data-sort]");
+  btn && (currentSort = btn.getAttribute("data-sort"), sortDropdown.querySelectorAll("button").forEach(function(b) {
+    b.classList.remove("is-active")
+  }), btn.classList.add("is-active"), sortDropdown.classList.remove("is-open"), renderLibrary())
+}), document.addEventListener("click", function(e) {
+  sortDropdown.contains(e.target) || e.target === librarySortBtn || sortDropdown.classList.remove("is-open")
+}), librarySearchInput.addEventListener("input", function() {
+  renderLibrary()
+}), libraryAddBtn.addEventListener("click", function() {
+  libraryFileInput.click()
+}), libraryBackBtn.addEventListener("click", function(e) {
+  e.stopPropagation(), exitGroup()
+}), libraryLabelText.addEventListener("dblclick", function(e) {
+  if (currentGroupFilter) {
+    e.stopPropagation();
+    var key = currentGroupFilter,
+      currentName = groupName(key),
+      input = document.createElement("input");
+    input.type = "text", input.className = "library-label-input", input.value = currentName, libraryLabelText.replaceWith(input), input.focus(), input.select(), input.addEventListener("blur", function() {
+      var newName = input.value.trim() || DEFAULT_GROUP_NAMES[key] || "Group",
+        names = loadGroupNames();
+      names[key] = newName, saveGroupNames(names), input.replaceWith(libraryLabelText), renderLibrary(), currentGroupFilter === key && (document.title = newName)
+    }), input.addEventListener("keydown", function(ev) {
+      "Enter" === ev.key && (ev.preventDefault(), input.blur()), "Escape" === ev.key && (ev.preventDefault(), input.value = currentName, input.blur())
+    })
+  }
+});
+var DROP_EPUB_TYPES = ["toc", "landmarks", "cover", "titlepage", "title-page", "halftitle", "copyright-page", "imprint"];
+
+function epubTypeTokens(t) {
+  return (t || "").toLowerCase().split(/\s+/).filter(Boolean)
+}
+
+function isDropType(epubType) {
+  return epubTypeTokens(epubType).some(function(t) {
+    return -1 !== DROP_EPUB_TYPES.indexOf(t)
+  })
+}
+
+function parseEpub(file) {
+  return JSZip.loadAsync(file).then(function(zip) {
+    var containerFile = zip.file("META-INF/container.xml");
+    if (!containerFile) throw new Error("not a valid EPUB (missing container.xml)");
+    return containerFile.async("text").then(function(containerXml) {
+      var rootfileEl = (new DOMParser).parseFromString(containerXml, "application/xml").getElementsByTagName("rootfile")[0];
+      if (!rootfileEl) throw new Error("could not find the book’s content file");
+      var opfPath = rootfileEl.getAttribute("full-path"),
+        opfDir = -1 !== opfPath.indexOf("/") ? opfPath.substring(0, opfPath.lastIndexOf("/") + 1) : "";
+      return zip.file(opfPath).async("text").then(function(opfText) {
+        var opfDoc = (new DOMParser).parseFromString(opfText, "application/xml");
+
+        function firstText(tagNames) {
+          for (var i = 0; i < tagNames.length; i++) {
+            var els = opfDoc.getElementsByTagName(tagNames[i]);
+            if (els.length && els[0].textContent.trim()) return els[0].textContent.trim()
+          }
+          return ""
+        }
+        var title = firstText(["dc:title", "title"]) || file.name.replace(/\.epub$/i, ""),
+          author = firstText(["dc:creator", "creator"]),
+          published = (firstText(["dc:date", "date"]) || "").slice(0, 10),
+          description = firstText(["dc:description", "description"]),
+          manifest = {};
+        Array.prototype.forEach.call(opfDoc.getElementsByTagName("item"), function(item) {
+          manifest[item.getAttribute("id")] = {
+            href: resolveHref(opfDir, item.getAttribute("href")),
+            mediaType: item.getAttribute("media-type") || "",
+            properties: item.getAttribute("properties") || ""
+          }
+        });
+        var spineIds = Array.prototype.map.call(opfDoc.getElementsByTagName("itemref"), function(ref) {
+            return ref.getAttribute("idref")
+          }),
+          coverHref = null,
+          coverItem = Array.prototype.filter.call(opfDoc.getElementsByTagName("item"), function(item) {
+            return -1 !== (item.getAttribute("properties") || "").indexOf("cover-image")
+          })[0];
+        if (coverItem) coverHref = resolveHref(opfDir, coverItem.getAttribute("href"));
+        else {
+          var coverMeta = Array.prototype.filter.call(opfDoc.getElementsByTagName("meta"), function(m) {
+            return "cover" === m.getAttribute("name")
+          })[0];
+          coverMeta && manifest[coverMeta.getAttribute("content")] && (coverHref = manifest[coverMeta.getAttribute("content")].href)
+        }
+        var coverHrefPromise = Promise.resolve(coverHref);
+        if (!coverHref) {
+          var guideRef = Array.prototype.filter.call(opfDoc.getElementsByTagName("reference"), function(r) {
+            return "cover" === (r.getAttribute("type") || "").toLowerCase()
+          })[0];
+          if (guideRef) {
+            var guideHref = resolveHref(opfDir, (guideRef.getAttribute("href") || "").split("#")[0]),
+              guideFile = zipFileLookup(zip, guideHref);
+            guideFile && (coverHrefPromise = guideFile.async("text").then(function(htmlText) {
+              var imgEl = (new DOMParser).parseFromString(htmlText, "text/html").querySelector("img[src], image"),
+                src = imgEl ? imgEl.getAttribute("src") || imgEl.getAttribute("xlink:href") || imgEl.getAttribute("href") : null;
+              return src ? resolveHref(-1 !== guideHref.indexOf("/") ? guideHref.substring(0, guideHref.lastIndexOf("/") + 1) : "", src) : null
+            }).catch(function() {
+              return null
+            }))
+          }
+        }
+        var tocPromise = Promise.resolve({}),
+          navItem = Array.prototype.filter.call(opfDoc.getElementsByTagName("item"), function(item) {
+            return -1 !== (item.getAttribute("properties") || "").indexOf("nav")
+          })[0];
+        if (navItem) {
+          var navHref = resolveHref(opfDir, navItem.getAttribute("href")),
+            navDir = -1 !== navHref.indexOf("/") ? navHref.substring(0, navHref.lastIndexOf("/") + 1) : "",
+            navFile = zip.file(navHref);
+          navFile && (tocPromise = navFile.async("text").then(function(navText) {
+            var navDoc = (new DOMParser).parseFromString(navText, "text/html"),
+              rootOl = navDoc.querySelector("nav ol") || navDoc.querySelector("ol"),
+              map = {};
+            return rootOl && Array.prototype.forEach.call(rootOl.children, function(li) {
+              if (li.tagName && "li" === li.tagName.toLowerCase()) {
+                var linkEl, titleText, directA = null;
+                if (Array.prototype.forEach.call(li.childNodes, function(node) {
+                    directA || 1 !== node.nodeType || "a" !== node.tagName.toLowerCase() || (directA = node)
+                  }), directA) linkEl = directA, titleText = directA.textContent.trim();
+                else {
+                  if (!(linkEl = li.querySelector("a[href]"))) return;
+                  var clone = li.cloneNode(!0),
+                    innerOl = clone.querySelector("ol");
+                  innerOl && innerOl.remove(), titleText = clone.textContent.trim()
+                }
+                var rawHref = linkEl.getAttribute("href") || "",
+                  hashIdx = rawHref.indexOf("#"),
+                  fragment = -1 !== hashIdx ? rawHref.slice(hashIdx + 1) : "",
+                  href = resolveHref(navDir, -1 !== hashIdx ? rawHref.slice(0, hashIdx) : rawHref);
+                href && titleText && (map[href] || (map[href] = []), map[href].some(function(e) {
+                  return e.fragment === fragment
+                }) || map[href].push({
+                  fragment: fragment,
+                  title: titleText
+                }))
+              }
+            }), map
+          }).catch(function() {
+            return {}
+          }))
+        }
+        if (!navItem) {
+          var ncxItem = Array.prototype.filter.call(opfDoc.getElementsByTagName("item"), function(item) {
+            return "application/x-dtbncx+xml" === (item.getAttribute("media-type") || "")
+          })[0];
+          if (ncxItem) {
+            var ncxHref = resolveHref(opfDir, ncxItem.getAttribute("href")),
+              ncxDir = -1 !== ncxHref.indexOf("/") ? ncxHref.substring(0, ncxHref.lastIndexOf("/") + 1) : "",
+              ncxFile = zip.file(ncxHref);
+            ncxFile && (tocPromise = ncxFile.async("text").then(function(ncxText) {
+              var navMapEl = (new DOMParser).parseFromString(ncxText, "application/xml").getElementsByTagName("navMap")[0],
+                map = {};
+              return navMapEl && Array.prototype.forEach.call(navMapEl.childNodes, function(np) {
+                if (np.tagName && "navpoint" === np.tagName.toLowerCase()) {
+                  var labelEl = np.getElementsByTagName("text")[0],
+                    contentEl = np.getElementsByTagName("content")[0];
+                  if (labelEl && contentEl) {
+                    var srcRaw = contentEl.getAttribute("src") || "",
+                      hashIdx = srcRaw.indexOf("#"),
+                      fragment = -1 !== hashIdx ? srcRaw.slice(hashIdx + 1) : "",
+                      href = resolveHref(ncxDir, -1 !== hashIdx ? srcRaw.slice(0, hashIdx) : srcRaw),
+                      titleText = labelEl.textContent.trim();
+                    if (!href || !titleText) return;
+                    map[href] || (map[href] = []), map[href].some(function(e) {
+                      return e.fragment === fragment
+                    }) || map[href].push({
+                      fragment: fragment,
+                      title: titleText
+                    })
+                  }
+                }
+              }), map
+            }).catch(function() {
+              return {}
+            }))
+          }
+        }
+        return Promise.all([tocPromise, coverHrefPromise]).then(function(resolvedPair) {
+          var tocMap = resolvedPair[0];
+          coverHref = resolvedPair[1] || coverHref;
+          var chapterPromises = spineIds.map(function(id) {
+            var item = manifest[id];
+            if (!item) return Promise.resolve(null);
+            var zf = zip.file(item.href);
+            return zf ? zf.async("text").then(function(text) {
+              var doc = (new DOMParser).parseFromString(text, "text/html"),
+                bodyEl = doc.body;
+              if (!bodyEl) return null;
+              var epubType = bodyEl.getAttribute("epub:type") || "";
+              if (!epubType) {
+                var typedEl = bodyEl.querySelector("[epub\\:type]");
+                typedEl && (epubType = typedEl.getAttribute("epub:type") || "")
+              }
+              if (isDropType(epubType)) return null;
+              Array.prototype.forEach.call(bodyEl.querySelectorAll("script, style, img, svg, image"), function(el) {
+                el.remove()
+              });
+              var itemDir = -1 !== item.href.indexOf("/") ? item.href.substring(0, item.href.lastIndexOf("/") + 1) : "";
+              Array.prototype.forEach.call(bodyEl.querySelectorAll("a[href]"), function(a) {
+                var raw = a.getAttribute("href") || "";
+                if (!raw || /^(https?:|mailto:|tel:|data:)/i.test(raw)) return;
+                var hashIdx = raw.indexOf("#"),
+                  fragment = -1 !== hashIdx ? raw.slice(hashIdx + 1) : "",
+                  pathPart = -1 !== hashIdx ? raw.slice(0, hashIdx) : raw,
+                  targetHref = pathPart ? resolveHref(itemDir, pathPart) : item.href;
+                a.setAttribute("data-toc-href", targetHref), fragment && a.setAttribute("data-toc-fragment", fragment), a.setAttribute("data-toc-link", "1"), a.setAttribute("href", "#")
+              });
+              var html = bodyEl.innerHTML.trim();
+              if (!html) return null;
+              if (0 === textWordCount(html)) return null;
+              var entries = tocMap[item.href] || [],
+                wholeFileEntry = entries.filter(function(e) {
+                  return !e.fragment
+                })[0],
+                tocTitle = wholeFileEntry ? wholeFileEntry.title : entries.length ? entries[0].title : "",
+                headingEl = bodyEl.querySelector("h1, h2, h3"),
+                fallbackTitle = headingEl ? headingEl.textContent.trim() : "";
+              return {
+                title: tocTitle,
+                fallbackTitle: fallbackTitle,
+                html: html,
+                href: item.href
+              }
+            }).catch(function() {
+              return null
+            }) : Promise.resolve(null)
+          });
+          return Promise.all(chapterPromises).then(function(results) {
+            var sections = results.filter(Boolean);
+            if (!sections.length) throw new Error("no readable chapters found in this file");
+            var chapters = sections.map(function(s, i) {
+              var rawTitle = s.title && !isGenericChapterTitle(s.title) ? s.title : s.fallbackTitle && !isGenericChapterTitle(s.fallbackTitle) ? s.fallbackTitle : "";
+              return {
+                id: "ch-" + i,
+                title: rawTitle.trim(),
+                originalTitle: rawTitle.trim(),
+                html: s.html
+              }
+            });
+            var hrefToChapterId = {};
+            sections.forEach(function(s, i) {
+              hrefToChapterId[s.href] = "ch-" + i
+            });
+            chapters.forEach(function(ch) {
+              if (-1 === ch.html.indexOf("data-toc-href")) return;
+              var wrap = document.createElement("div");
+              wrap.innerHTML = ch.html, Array.prototype.forEach.call(wrap.querySelectorAll("a[data-toc-href]"), function(a) {
+                var targetHref = a.getAttribute("data-toc-href"),
+                  targetId = hrefToChapterId[targetHref];
+                if (!targetId) try {
+                  targetId = hrefToChapterId[decodeURIComponent(targetHref)]
+                } catch (e) {}
+                if (targetId) {
+                  a.setAttribute("data-goto-chapter", targetId);
+                  var fragAttr = a.getAttribute("data-toc-fragment");
+                  fragAttr && a.setAttribute("data-goto-anchor", fragAttr)
+                }
+                a.removeAttribute("data-toc-href"), a.removeAttribute("data-toc-fragment")
+              }), ch.html = wrap.innerHTML
+            });
+
+            function guessImageMime(href) {
+              var ext = href.split(".").pop().toLowerCase().split("?")[0];
+              return "png" === ext ? "image/png" : "svg" === ext ? "image/svg+xml" : "gif" === ext ? "image/gif" : "webp" === ext ? "image/webp" : "image/jpeg"
+            }
+
+            function captionFor(href) {
+              var base = href.split("/").pop();
+              try {
+                base = decodeURIComponent(base)
+              } catch (e) {}
+              return base
+            }
+            var otherImageHrefs = [];
+            Object.keys(manifest).forEach(function(id) {
+              var item = manifest[id];
+              0 === (item.mediaType || "").trim().toLowerCase().indexOf("image/") && (coverHref && item.href === coverHref || -1 === otherImageHrefs.indexOf(item.href) && otherImageHrefs.push(item.href))
+            }), otherImageHrefs = otherImageHrefs.slice(0, 60);
+            var coverPromise = Promise.resolve(null);
+            if (coverHref) {
+              var coverFile = zipFileLookup(zip, coverHref);
+              coverFile && (coverPromise = coverFile.async("base64").then(function(base64) {
+                return {
+                  dataUrl: "data:" + guessImageMime(coverHref) + ";base64," + base64,
+                  caption: "Cover"
+                }
+              }).catch(function() {
+                return null
+              }))
+            }
+            var otherImagesPromise = Promise.all(otherImageHrefs.map(function(href) {
+              var f = zipFileLookup(zip, href);
+              return f ? f.async("base64").then(function(base64) {
+                return {
+                  dataUrl: "data:" + guessImageMime(href) + ";base64," + base64,
+                  caption: captionFor(href)
+                }
+              }).catch(function() {
+                return null
+              }) : Promise.resolve(null)
+            })).then(function(results) {
+              return results.filter(Boolean)
+            });
+            return Promise.all([coverPromise, otherImagesPromise]).then(function(res) {
+              var coverEntry = res[0],
+                otherImages = res[1],
+                images = coverEntry ? [coverEntry].concat(otherImages) : otherImages;
+              return {
+                id: "book-" + Date.now() + "-" + Math.random().toString(36).slice(2, 8),
+                title: title,
+                author: author,
+                published: published,
+                description: description,
+                cover: coverEntry ? coverEntry.dataUrl : null,
+                originalCover: coverEntry ? coverEntry.dataUrl : null,
+                images: images,
+                chapters: chapters,
+                addedAt: Date.now(),
+                status: "unread",
+                lastOpened: Date.now()
+              }
+            })
+          })
+        })
+      })
+    })
+  })
+}
+libraryFileInput.addEventListener("change", function() {
+  var files = Array.prototype.slice.call(this.files);
+  if (this.value = "", files.length) {
+    if ("undefined" == typeof JSZip) return void showToast("EPUB support failed to load — check your connection and try again.");
+    var added = 0,
+      failed = 0;
+    files.reduce(function(chain, file) {
+      return chain.then(function() {
+        return showToast("Parsing " + file.name + "…" + (files.length > 1 ? " (" + (added + failed + 1) + "/" + files.length + ")" : "")), parseEpub(file).then(function(book) {
+          var list = loadLibraryList();
+          list.push(book), saveLibraryList(list) ? added++ : (failed++, showToast('Parsed "' + book.title + '", but it’s too large to save locally.'))
+        }).catch(function(err) {
+          console.error(err), failed++, showToast("Could not parse " + file.name + " — " + (err && err.message ? err.message : "unknown error") + ".")
+        })
+      })
+    }, Promise.resolve()).then(function() {
+      document.body.classList.contains("library-open") && renderLibrary(), added && showToast(added === files.length ? (1 === added ? "Added 1 book to your library." : "Added " + added + " books to your library.") : "Added " + added + " of " + files.length + " books to your library.")
+    })
+  }
+});
+var bookInfoOverlay = $("#bookInfoOverlay"),
+  bookInfoModal = $("#bookInfoModal"),
+  bookInfoClose = $("#bookInfoClose"),
+  infoTitle = $("#infoTitle"),
+  infoAuthor = $("#infoAuthor"),
+  infoDate = $("#infoDate"),
+  infoFetchBtn = $("#infoFetchBtn"),
+  infoDescText = $("#infoDescText"),
+  infoDescEdit = $("#infoDescEdit"),
+  infoDescTextarea = $("#infoDescTextarea"),
+  infoDescEditBtn = $("#infoDescEditBtn"),
+  infoDescCancel = $("#infoDescCancel"),
+  infoDescSave = $("#infoDescSave"),
+  infoStatusOptions = $("#infoStatusOptions"),
+  infoDeleteBtn = $("#infoDeleteBtn"),
+  infoCoverPreview = $("#infoCoverPreview"),
+  infoCoverImg = $("#infoCoverImg"),
+  infoCoverPlaceholder = $("#infoCoverPlaceholder"),
+  infoCoverUploadBtn = $("#infoCoverUploadBtn"),
+  infoCoverRemoveBtn = $("#infoCoverRemoveBtn"),
+  infoCoverInput = $("#infoCoverInput"),
+  bookInfoTarget = null;
+
+function renderBookInfoDesc(book) {
+  var desc = (book.description || "").trim();
+  desc ? (infoDescText.innerHTML = desc) : (infoDescText.textContent = "No description yet."), infoDescText.classList.toggle("is-empty", !desc)
+}
+
+function renderBookInfoStatus(book) {
+  var status = book.status || "unread";
+  infoStatusOptions.querySelectorAll(".book-info-status-btn").forEach(function(btn) {
+    btn.classList.toggle("is-active", btn.getAttribute("data-status") === status)
+  })
+}
+
+function renderBookInfoCover(book) {
+  void 0 === book.originalCover && (book.originalCover = book.cover || null);
+  var hasCustomCover = !!book.cover && book.cover !== book.originalCover;
+  book.cover ? (infoCoverImg.src = book.cover, infoCoverImg.hidden = !1, infoCoverPlaceholder.hidden = !0) : (infoCoverImg.hidden = !0, infoCoverImg.src = "", infoCoverPlaceholder.hidden = !1), infoCoverRemoveBtn.hidden = !hasCustomCover
+}
+
+function persistBookMetadataSafe(book) {
+  if (!book) return !1;
+  if (currentBook && book.id === currentBook.id) return currentBook.description = book.description, currentBook.published = book.published, currentBook.status = book.status, currentBook.cover = book.cover, currentBook.originalCover = book.originalCover, persistCurrentBookSafe();
+  var list = loadLibraryList(),
+    idx = list.findIndex(function(b) {
+      return b.id === book.id
+    });
+  return -1 !== idx && (list[idx] = book, saveLibraryList(list))
+}
+
+function persistCurrentBookSafe() {
+  if (!currentBook) return !1;
+  var list = loadLibraryList(),
+    idx = list.findIndex(function(b) {
+      return b.id === currentBook.id
+    });
+  return -1 !== idx && (list[idx] = currentBook, saveLibraryList(list))
+}
+infoCoverPreview.addEventListener("click", function() {
+  infoCoverInput.click()
+}), infoCoverUploadBtn.addEventListener("click", function() {
+  infoCoverInput.click()
+}), infoCoverInput.addEventListener("change", function() {
+  var file = this.files[0];
+  if (file && bookInfoTarget) {
+    var book = bookInfoTarget,
+      reader = new FileReader;
+    reader.onload = function(ev) {
+      var url = ev.target.result,
+        previousCover = book.cover;
+      if (book.cover = url, !persistBookMetadataSafe(book)) return book.cover = previousCover, infoCoverInput.value = "", void showToast("That image is too large to save — try a smaller file.");
+      renderBookInfoCover(book), currentBook && currentBook.id === book.id && function() {
+        var coverEl = $("#bookCover");
+        coverEl.style.backgroundImage = 'url("' + url + '")', coverEl.style.backgroundSize = "cover", coverEl.style.backgroundPosition = "center", coverEl.innerHTML = ""
+      }(), document.body.classList.contains("library-open") && renderLibrary(), infoCoverInput.value = "", showToast("Cover updated.")
+    }, reader.readAsDataURL(file)
+  }
+}), infoCoverRemoveBtn.addEventListener("click", function() {
+  if (bookInfoTarget) {
+    var book = bookInfoTarget;
+    book.cover = book.originalCover || "", persistBookMetadataSafe(book), renderBookInfoCover(book), currentBook && currentBook.id === book.id && function() {
+      var coverEl = $("#bookCover");
+      book.cover ? (coverEl.style.backgroundImage = 'url("' + book.cover + '")', coverEl.style.backgroundSize = "cover", coverEl.style.backgroundPosition = "center", coverEl.innerHTML = "") : (coverEl.style.backgroundImage = "", coverEl.innerHTML = "<span>" + escapeHtml((book.title || "?").charAt(0).toUpperCase()) + "</span>")
+    }(), document.body.classList.contains("library-open") && renderLibrary(), showToast("Original cover restored.")
+  }
+});
+
+function openBookInfo(book) {
+  book && (bookInfoTarget = book, infoTitle.textContent = book.title || "Untitled", infoAuthor.textContent = book.author || "", infoAuthor.style.display = book.author ? "" : "none", infoDate.textContent = book.published || "", infoDate.style.display = book.published ? "" : "none", infoFetchBtn.disabled = !1, infoFetchBtn.textContent = "Fetch details from Open Library", renderBookInfoDesc(book), renderBookInfoStatus(book), renderBookInfoCover(book), infoDescEdit.hidden = !0, infoDescText.hidden = !1, infoDescEditBtn.hidden = !1, bookInfoOverlay.classList.add("is-open"), bookInfoModal.classList.add("is-open"))
+}
+
+function closeBookInfo() {
+  bookInfoOverlay.classList.remove("is-open"), bookInfoModal.classList.remove("is-open"), infoDescEdit.hidden = !0, infoDescText.hidden = !1, infoDescEditBtn.hidden = !1
+}
+
+function persistBookMetadata(book) {
+  if (book) {
+    if (currentBook && book.id === currentBook.id) return currentBook.description = book.description, currentBook.published = book.published, currentBook.status = book.status, void persistCurrentBook();
+    var list = loadLibraryList(),
+      idx = list.findIndex(function(b) {
+        return b.id === book.id
+      }); - 1 !== idx && (list[idx] = book, saveLibraryList(list))
+  }
+}
+
+function fetchFromOpenLibrary(book) {
+  var query = [book.title, book.author].filter(Boolean).join(" ");
+  return query ? fetch("https://openlibrary.org/search.json?q=" + encodeURIComponent(query) + "&limit=1").then(function(res) {
+    return res.json()
+  }).then(function(data) {
+    var doc = data && data.docs && data.docs[0];
+    if (!doc) return null;
+    var published = doc.first_publish_year ? String(doc.first_publish_year) : "";
+    return doc.key ? fetch("https://openlibrary.org" + doc.key + ".json").then(function(res2) {
+      return res2.json()
+    }).then(function(workData) {
+      var description = "";
+      return workData && workData.description && (description = "string" == typeof workData.description ? workData.description : workData.description.value || ""), {
+        published: published,
+        description: description
+      }
+    }).catch(function() {
+      return {
+        published: published,
+        description: ""
+      }
+    }) : {
+      published: published,
+      description: ""
+    }
+  }).catch(function() {
+    return null
+  }) : Promise.resolve(null)
+}
+infoFetchBtn.addEventListener("click", function() {
+  if (bookInfoTarget) {
+    var book = bookInfoTarget;
+    infoFetchBtn.disabled = !0, infoFetchBtn.textContent = "Fetching…", fetchFromOpenLibrary(book).then(function(result) {
+      if (bookInfoTarget === book)
+        if (infoFetchBtn.disabled = !1, infoFetchBtn.textContent = "Fetch details from Open Library", result) {
+          var filledPublished = !book.published && result.published,
+            filledDescription = !book.description && result.description;
+          filledPublished && (book.published = result.published), filledDescription && (book.description = result.description), filledPublished || filledDescription ? (infoDate.textContent = book.published || "", infoDate.style.display = book.published ? "" : "none", renderBookInfoDesc(book), persistBookMetadata(book), showToast("Filled in details from Open Library.")) : showToast("No new details found on Open Library.")
+        } else showToast("Couldn’t find a match on Open Library.")
+    })
+  }
+}), infoStatusOptions.addEventListener("click", function(e) {
+  var btn = e.target.closest(".book-info-status-btn");
+  if (btn && bookInfoTarget) {
+    var status = btn.getAttribute("data-status");
+    bookInfoTarget.status = status, "complete" === status && (bookInfoTarget.completedAt = Date.now()), renderBookInfoStatus(bookInfoTarget), persistBookMetadata(bookInfoTarget), document.body.classList.contains("library-open") && renderLibrary(), showToast("Status updated to " + status + ".")
+  }
+}), bookInfoClose.addEventListener("click", closeBookInfo), bookInfoOverlay.addEventListener("click", closeBookInfo), document.addEventListener("keydown", function(e) {
+  "Escape" === e.key && bookInfoModal.classList.contains("is-open") && closeBookInfo()
+}), infoDescEditBtn.addEventListener("click", function() {
+  bookInfoTarget && (infoDescTextarea.value = bookInfoTarget.description || "", infoDescText.hidden = !0, infoDescEditBtn.hidden = !0, infoDescEdit.hidden = !1, infoDescTextarea.focus())
+}), infoDescCancel.addEventListener("click", function() {
+  infoDescEdit.hidden = !0, infoDescText.hidden = !1, infoDescEditBtn.hidden = !1
+}), infoDescSave.addEventListener("click", function() {
+  bookInfoTarget && (bookInfoTarget.description = infoDescTextarea.value.trim(), renderBookInfoDesc(bookInfoTarget), infoDescEdit.hidden = !0, infoDescText.hidden = !1, infoDescEditBtn.hidden = !1, persistBookMetadata(bookInfoTarget), showToast("Description saved."))
+}), infoDeleteBtn.addEventListener("click", function() {
+  if (bookInfoTarget) {
+    var book = bookInfoTarget,
+      title = book.title || "this book";
+    if (window.confirm('Delete "' + title + '"? This can\u2019t be undone.')) {
+      var list = loadLibraryList().filter(function(b) {
+        return b.id !== book.id
+      });
+      saveLibraryList(list);
+      var wasCurrent = currentBook && currentBook.id === book.id;
+      closeBookInfo(), document.body.classList.contains("library-open") && renderLibrary(), wasCurrent && (currentBook = null, state.lastOpenBookId = null, saveState(), openLibrary()), showToast('Deleted \u201c' + title + '\u201d.')
+    }
+  }
+}), $("#bookInfo").addEventListener("click", function() {
+  openBookInfo(currentBook)
+}), $("#sidebarBookInfoBtn").addEventListener("click", function(e) {
+  e.stopPropagation(), openBookInfo(currentBook)
+});
+var bodySizeInput = $("#bodySizeInput");
+bodySizeInput.addEventListener("input", function() {
+  state.bodySize = parseFloat(this.value) || 16, applyBodyTypography(), saveState()
+}), bodySizeInput.addEventListener("change", function() {
+  this.value < 8 && (this.value = 8), this.value > 28 && (this.value = 28), state.bodySize = parseFloat(this.value), applyBodyTypography(), saveState()
+});
+var bodySpacingInput = $("#bodySpacingInput");
+bodySpacingInput.addEventListener("input", function() {
+  state.bodySpacing = parseFloat(this.value) || 1.8, applyBodyTypography(), saveState()
+}), bodySpacingInput.addEventListener("change", function() {
+  this.value < 1 && (this.value = 1), this.value > 3 && (this.value = 3), state.bodySpacing = parseFloat(this.value), applyBodyTypography(), saveState()
+});
+var bodyIndentInput = $("#bodyIndentInput");
+bodyIndentInput.addEventListener("input", function() {
+  state.bodyIndent = parseFloat(this.value) || 24, applyBodyTypography(), saveState()
+}), bodyIndentInput.addEventListener("change", function() {
+  this.value < 0 && (this.value = 0), this.value > 40 && (this.value = 40), state.bodyIndent = parseFloat(this.value), applyBodyTypography(), saveState()
+});
+var marginInput = $("#marginInput");
+marginInput.addEventListener("input", function() {
+  state.margin = parseFloat(this.value) || 12, document.documentElement.style.setProperty("--margin", state.margin + "%"), saveState()
+}), marginInput.addEventListener("change", function() {
+  this.value < 0 && (this.value = 0), this.value > 40 && (this.value = 40), state.margin = parseFloat(this.value), document.documentElement.style.setProperty("--margin", state.margin + "%"), saveState()
+}), marginInput.value = state.margin || 12, document.documentElement.style.setProperty("--margin", (state.margin || 12) + "%");
+var wpmInput = $("#wpmInput");
+wpmInput.addEventListener("input", function() {
+  state.wpm = parseFloat(this.value) || 220, updateChapterMeta(), updateSidebarMeta(), saveState()
+}), wpmInput.addEventListener("change", function() {
+  this.value < 50 && (this.value = 50), this.value > 600 && (this.value = 600), state.wpm = parseFloat(this.value), updateChapterMeta(), updateSidebarMeta(), saveState()
+}), wpmInput.value = state.wpm || 220;
+var customFontNameInput = $("#customFontName"),
+  fontUpload = $("#fontUpload"),
+  fontStatus = $("#fontStatus"),
+  fontRemove = $("#fontRemove"),
+  fontSaveBtn = $("#fontSaveBtn");
+customFontNameInput.addEventListener("input", function() {
+  state.customFontName = this.value.trim(), saveState()
+}), fontUpload.addEventListener("change", function(e) {
+  var file = this.files[0];
+  if (file) {
+    var reader = new FileReader;
+    reader.onload = function(ev) {
+      state.customFontUrl = ev.target.result, fontStatus.textContent = file.name, saveState()
+    }, reader.readAsDataURL(file)
+  }
+}), fontSaveBtn.addEventListener("click", function() {
+  var name = customFontNameInput.value.trim() || "Untitled",
+    fontName = state.customFontName || name,
+    fontUrl = state.customFontUrl;
+  if (fontUrl) {
+    if (state.savedFonts.some(function(f) {
+        return f.name === name
+      })) {
+      if (!confirm('A font named "' + name + '" already exists. Replace it?')) return;
+      state.savedFonts = state.savedFonts.filter(function(f) {
+        return f.name !== name
+      })
+    }
+    if (state.savedFonts.push({
+        name: name,
+        fontName: fontName,
+        fontUrl: fontUrl
+      }), !saveState()) return state.savedFonts.pop(), void showToast("That font file is too large to save — try a smaller one.");
+    customFontNameInput.value = "", fontStatus.textContent = "No file", fontUpload.value = "", state.customFontName = "", state.customFontUrl = "", renderFontToggles(), ["bodyFont", "titleFont", "authorFont"].forEach(function(key) {
+      if ("custom" === state[key]) {
+        var newKey = "saved-" + (state.savedFonts.length - 1);
+        state[key] = newKey
+      }
+    }), applyBodyTypography(), applyTitleFont(), applyAuthorFont(), renderFontToggles(), updateCustomFontRowVisibility(), saveState()
+  } else alert("Please upload a font file first.")
+}), fontRemove.addEventListener("click", function() {
+  state.customFontName = "", state.customFontUrl = "", customFontNameInput.value = "", fontStatus.textContent = "No file", fontUpload.value = "", saveState()
+});
+var customPaperInput = $("#customPaper"),
+  customInkInput = $("#customInk");
+customPaperInput.addEventListener("input", function() {
+  state.customPaper = this.value, "custom" === state.themeMode && (applyCustomTheme(state.customPaper, state.customInk, "custom"), saveState())
+}), customInkInput.addEventListener("input", function() {
+  state.customInk = this.value, "custom" === state.themeMode && (applyCustomTheme(state.customPaper, state.customInk, "custom"), saveState())
+});
+var themeNameInput = $("#themeNameInput"),
+  themeSaveBtn = $("#themeSaveBtn");
+themeSaveBtn.addEventListener("click", function() {
+  var name = themeNameInput.value.trim() || "Untitled",
+    paper = state.customPaper || "#E9E1CB",
+    ink = state.customInk || "#2A2419";
+  if (state.savedThemes.some(function(t) {
+      return t.name === name
+    })) {
+    if (!confirm('A theme named "' + name + '" already exists. Replace it?')) return;
+    state.savedThemes = state.savedThemes.filter(function(t) {
+      return t.name !== name
+    })
+  }
+  state.savedThemes.push({
+    name: name,
+    paper: paper,
+    ink: ink
+  }), themeNameInput.value = "", renderThemeToggles(), renderSavedThemesList();
+  var newIdx = state.savedThemes.length - 1;
+  state.activeThemeIndex = newIdx, state.themeMode = "saved", applyThemeByIndex(newIdx), document.getElementById("themeEditor").classList.remove("is-open");
+  var btns = $("#themeToggleContainer").querySelectorAll(".toggle-btn");
+  btns.forEach(function(b) {
+    b.getAttribute("data-theme") === "saved-" + newIdx && (btns.forEach(function(b2) {
+      b2.classList.remove("is-selected")
+    }), b.classList.add("is-selected"))
+  }), saveState()
+});
+var bgUpload = $("#bgUpload"),
+  bgFilename = $("#bgFilename"),
+  bgPreview = $("#bgPreview"),
+  bgRemove = $("#bgRemove");
+bgUpload.addEventListener("change", function(e) {
+  var file = this.files[0];
+  if (file) {
+    var reader = new FileReader;
+    reader.onload = function(ev) {
+      var url = ev.target.result,
+        previousUrl = state.customBgUrl;
+      if (state.customBgUrl = url, !saveState()) return state.customBgUrl = previousUrl, bgUpload.value = "", void showToast("That image is too large to save — try a smaller file.");
+      bgFilename.textContent = file.name, bgPreview.style.backgroundImage = 'url("' + url + '")', bgPreview.style.display = "block", document.body.classList.add("has-custom-bg"), document.documentElement.style.setProperty("--custom-bg-url", 'url("' + url + '")'), document.documentElement.style.setProperty("--bg-size", state.bgSize)
+    }, reader.readAsDataURL(file)
+  }
+}), bgRemove.addEventListener("click", function() {
+  state.customBgUrl = "", bgFilename.textContent = "No background", bgPreview.style.display = "none", bgPreview.style.backgroundImage = "", bgUpload.value = "", document.body.classList.remove("has-custom-bg"), document.documentElement.style.setProperty("--custom-bg-url", "none"), saveState()
+});
+var bgSizeGroup = document.getElementById("bgSizeGroup");
+bgSizeGroup.addEventListener("click", function(e) {
+  var btn = e.target.closest(".toggle-btn");
+  if (btn) {
+    var size = btn.getAttribute("data-bg-size");
+    state.bgSize = size, document.documentElement.style.setProperty("--bg-size", size), this.querySelectorAll(".toggle-btn").forEach(function(b) {
+      b.classList.remove("is-selected")
+    }), btn.classList.add("is-selected"), saveState()
+  }
+});
+var gdriveDot = $("#gdriveDot"),
+  gdriveStatusText = $("#gdriveStatusText"),
+  gdriveConnect = $("#gdriveConnect");
+gdriveConnect.addEventListener("click", function() {
+  gdriveDot.className = "status-dot syncing", gdriveStatusText.textContent = "Connecting...", gdriveConnect.textContent = "Connecting...", gdriveConnect.disabled = !0, setTimeout(function() {
+    gdriveDot.className = "status-dot online", gdriveStatusText.textContent = "Connected to Drive", gdriveConnect.textContent = "✓ Connected", gdriveConnect.disabled = !0
+  }, 1200)
+}), document.addEventListener("keydown", function(e) {
+  if ("Escape" === e.key && (groupDeleteModal.classList.contains("is-open") ? closeGroupDeleteConfirm() : selectionMode ? exitSelectionMode() : (closeSidebar(), closeSettings(), currentGroupFilter ? exitGroup() : closeLibrary())), "INPUT" !== e.target.tagName && "TEXTAREA" !== e.target.tagName)
+    if ("ArrowRight" !== e.key) {
+      if ("ArrowLeft" !== e.key) return "ArrowDown" === e.key || " " === e.key || "Spacebar" === e.key ? (window.scrollBy({
+        top: .85 * window.innerHeight,
+        behavior: "smooth"
+      }), void e.preventDefault()) : "ArrowUp" === e.key ? (window.scrollBy({
+        top: .85 * -window.innerHeight,
+        behavior: "smooth"
+      }), void e.preventDefault()) : "j" === e.key || "J" === e.key ? (window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      }), void e.preventDefault()) : "l" === e.key || "L" === e.key ? (window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "smooth"
+      }), void e.preventDefault()) : void 0;
+      var curPagePrev = document.querySelector(".chapter-page:not([hidden])"),
+        prev = curPagePrev && curPagePrev.querySelector(".chapter-nav-prev");
+      prev && (prev.click(), e.preventDefault())
+    } else {
+      var curPageNext = document.querySelector(".chapter-page:not([hidden])"),
+        next = curPageNext && curPageNext.querySelector(".chapter-nav-next");
+      next && (next.click(), e.preventDefault())
+    }
+});
+var isTouch = window.matchMedia("(hover: none)").matches;
+if (isTouch) {
+  var toolbar = $("#toolbar"),
+    touchHint = $("#touchHint");
+  touchHint.classList.add("show"), setTimeout(function() {
+    touchHint.classList.remove("show")
+  }, 3e3), document.addEventListener("click", function(e) {
+    var tappedTop = e.clientY < 120,
+      tappedToolbar = toolbar.contains(e.target);
+    sidebar.contains(e.target) || settingsPanel.contains(e.target) || (tappedTop && !toolbar.classList.contains("is-visible") ? toolbar.classList.add("is-visible") : tappedToolbar || toolbar.classList.remove("is-visible"))
+  })
+}
+var scrollTimer = null;
+
+function onScroll() {
+  scrollTimer && (cancelAnimationFrame(scrollTimer), scrollTimer = null), scrollTimer = requestAnimationFrame(function() {
+    updateReadingProgress(), updateChapterMeta(), updateSidebarMeta(), scrollTimer = null
+  })
+}
+
+function addChapterBylines() {
+  var mainTitleEl = document.querySelector(".book-title"),
+    mainAuthorEl = document.querySelector(".book-author");
+  if (mainTitleEl && mainAuthorEl) {
+    var titleText = mainTitleEl.textContent.trim(),
+      authorText = mainAuthorEl.textContent.trim();
+    $$(".chapter-page").forEach(function(page) {
+      if (!page.querySelector(".chapter-byline")) {
+        var head = page.querySelector(".chapter-head");
+        if (head) {
+          var byline = document.createElement("div");
+          byline.className = "chapter-byline", byline.innerHTML = '<span class="cb-title">' + titleText + '</span><span class="cb-by">' + authorText + "</span>", head.insertBefore(byline, head.firstChild)
+        }
+      }
+    })
+  }
+}
+
+function init() {
+  loadState(), bodySizeInput.value = state.bodySize, bodySpacingInput.value = state.bodySpacing, bodyIndentInput.value = state.bodyIndent, applyBodyTypography(), applyTitleFont(), applyAuthorFont(), addChapterBylines(), renderFontToggles(), renderSavedThemesList(), updateCustomFontRowVisibility(), state.customFontName && (customFontNameInput.value = state.customFontName, state.customFontUrl && (fontStatus.textContent = "Loaded")), document.documentElement.style.setProperty("--bg-size", state.bgSize || "auto"), bgSizeGroup.querySelectorAll(".toggle-btn").forEach(function(b) {
+    b.classList.toggle("is-selected", b.getAttribute("data-bg-size") === (state.bgSize || "auto"))
+  }), renderThemeToggles(), state.activeThemeIndex >= 0 && state.activeThemeIndex < state.savedThemes.length ? (state.themeMode = "saved", applyThemeByIndex(state.activeThemeIndex)) : "custom" === state.themeMode ? (document.body.setAttribute("data-theme", "custom"), document.getElementById("themeEditor").classList.add("is-open"), customPaperInput.value = state.customPaper || "#E9E1CB", customInkInput.value = state.customInk || "#2A2419", applyCustomTheme(state.customPaper, state.customInk, "custom")) : (document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", "")), state.customBgUrl && (document.body.classList.add("has-custom-bg"), document.documentElement.style.setProperty("--custom-bg-url", 'url("' + state.customBgUrl + '")'), bgFilename.textContent = "Custom background", bgPreview.style.backgroundImage = 'url("' + state.customBgUrl + '")', bgPreview.style.display = "block");
+  var lastBook = state.lastOpenBookId ? findBook(state.lastOpenBookId) : null;
+  lastBook && loadBook(lastBook), (state.libraryOpen || !lastBook) && openLibrary()
+}
+window.addEventListener("scroll", onScroll, {
+  passive: !0
+}), window.addEventListener("resize", function() {
+  updateReadingProgress(), updateChapterMeta(), updateSidebarMeta()
+}, {
+  passive: !0
+});
+var loadingOverlay = $("#loadingOverlay");
+setTimeout(function() {
+  loadingOverlay.classList.add("hidden")
+}, 400), init(), window.addEventListener("beforeunload", function() {
+  saveState()
+});
+(function() {
+  var thumb = document.getElementById("customScrollbarThumb");
+  if (!thumb) return;
+  var hideTimer = null,
+    dragging = false,
+    dragStartY = 0,
+    dragStartScroll = 0;
+
+  function metrics() {
+    var viewH = window.innerHeight,
+      fullH = document.documentElement.scrollHeight,
+      thumbH = Math.max(30, viewH * viewH / fullH);
+    return {
+      viewH: viewH,
+      fullH: fullH,
+      thumbH: thumbH,
+      maxThumbTop: viewH - thumbH,
+      maxScroll: fullH - viewH
+    }
+  }
+
+  function update() {
+    var m = metrics();
+    if (m.fullH <= m.viewH + 1) return void(thumb.style.opacity = "0", thumb.style.pointerEvents = "none");
+    thumb.style.pointerEvents = "auto";
+    var scrollTop = window.scrollY || document.documentElement.scrollTop,
+      thumbTop = m.maxScroll > 0 ? scrollTop / m.maxScroll * m.maxThumbTop : 0;
+    thumb.style.height = m.thumbH + "px", thumb.style.top = thumbTop + "px"
+  }
+
+  function showThumb() {
+    update(), thumb.classList.add("is-visible"), clearTimeout(hideTimer), hideTimer = setTimeout(function() {
+      dragging || thumb.classList.remove("is-visible")
+    }, 900)
+  }
+  thumb.addEventListener("mousedown", function(e) {
+    dragging = !0, dragStartY = e.clientY, dragStartScroll = window.scrollY || document.documentElement.scrollTop, thumb.classList.add("is-dragging"), clearTimeout(hideTimer), e.preventDefault()
+  }), window.addEventListener("mousemove", function(e) {
+    if (!dragging) return;
+    var m = metrics();
+    if (m.maxThumbTop <= 0) return;
+    var scrollDelta = (e.clientY - dragStartY) / m.maxThumbTop * m.maxScroll;
+    window.scrollTo(0, dragStartScroll + scrollDelta)
+  }), window.addEventListener("mouseup", function() {
+    dragging && (dragging = !1, thumb.classList.remove("is-dragging"), clearTimeout(hideTimer), hideTimer = setTimeout(function() {
+      thumb.classList.remove("is-visible")
+    }, 900))
+  }), window.addEventListener("scroll", showThumb, {
+    passive: !0
+  }), window.addEventListener("resize", update, {
+    passive: !0
+  }), update()
+})()
+
+</script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script>
+  const CLIENT_ID = '185876513289-u805efh6lsqicckan5oa7a93v8hh0jia.apps.googleusercontent.com';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file';
+
+  let accessToken = null;
+  let tokenClient;
+
+  window.onload = function () {
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: SCOPES,
+      callback: (resp) => {
+        accessToken = resp.access_token;
+        console.log('Signed in! Token:', accessToken);
+        alert('Signed in successfully!');
+      },
+    });
+  };
+
+  function signIn() {
+    tokenClient.requestAccessToken();
+  }
+</script>
+<button onclick="signIn()">Sign in with Google</button>
+</body>
+</html>
