@@ -1,4 +1,4 @@
-  // ---- Google Drive sync ----
+// ---- Google Drive sync ----
   const CLIENT_ID = '185876513289-u805efh6lsqicckan5oa7a93v8hh0jia.apps.googleusercontent.com';
   // drive.readonly: list/download epub files from your folder
   // drive.file: create/update a small progress file this app owns
@@ -185,6 +185,7 @@
                 added++;
               }
               if (!saveLibraryList(freshList)) { failed++; showToast('"' + book.title + '" is too large to save locally.'); }
+              document.body.classList.contains('library-open') && renderLibrary();
             });
           }).catch(function (err) {
             console.error(err); failed++;
