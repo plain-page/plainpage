@@ -395,6 +395,34 @@ function loadLibraryList() {
   return libraryCache
 }
 
+function idbPutBook(book) {
+  return openLibraryDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction(LIBRARY_STORE, "readwrite");
+      tx.objectStore(LIBRARY_STORE).put(book);
+      tx.oncomplete = function() { resolve(!0) };
+      tx.onerror = function() { reject(tx.error) }
+    })
+  })
+}
+
+// Reading progress fires on every scroll tick. Update the in-memory cache
+// instantly (cheap), but only write the single changed book to IndexedDB
+// after scrolling settles, instead of rewriting the whole library every tick.
+var persistBookDebounceTimers = {};
+function persistBookDebounced(book) {
+  var idx = libraryCache.findIndex(function(b) { return b.id === book.id });
+  idx !== -1 ? libraryCache[idx] = book : libraryCache.push(book);
+  var id = book.id;
+  persistBookDebounceTimers[id] && clearTimeout(persistBookDebounceTimers[id]);
+  persistBookDebounceTimers[id] = setTimeout(function() {
+    delete persistBookDebounceTimers[id];
+    idbPutBook(book).catch(function(err) {
+      console.error("Failed to persist reading progress to IndexedDB", err)
+    })
+  }, 500)
+}
+
 function saveLibraryList(list) {
   libraryCache = list;
   idbReplaceAllBooks(list).catch(function(err) {
@@ -546,11 +574,7 @@ function updateSidebarMeta() {
 
 function persistCurrentBook() {
   if (currentBook) {
-    var list = loadLibraryList(),
-      idx = list.findIndex(function(b) {
-        return b.id === currentBook.id
-      });
-    -1 !== idx && (list[idx] = currentBook, saveLibraryList(list))
+    persistBookDebounced(currentBook)
   }
 }
 
@@ -565,37 +589,98 @@ function renderChapterPageHtml(book, chapter, index, total) {
   return '<section class="chapter-page" id="page-' + chapter.id + '" data-chapter-id="' + chapter.id + '"' + (isFirst ? "" : " hidden") + '><header class="chapter-head' + (hasTitle ? "" : " chapter-head--no-divider") + '"><div class="chapter-byline"><span class="cb-title">' + escapeHtml(book.title) + '</span><span class="cb-by">' + escapeHtml(book.author) + "</span></div>" + dividerHtml + '<p class="chapter-meta" id="meta-' + chapter.id + '">&nbsp;</p></header><div class="chapter-body">' + chapter.html + "</div>" + endHtml + '<nav class="chapter-nav">' + prevBtn + nextBtn + "</nav></section>"
 }
 
+// Renders a single sidebar row (leaf label + optional expand/collapse toggle).
+// `seenChapterIds` tracks which chapterId has already claimed the
+// "meta-<id>-sidebar" element id, since a shared file can legitimately be
+// pointed at by more than one TOC entry (e.g. several in-file anchors) and
+// DOM ids must stay unique — only the first such row gets live progress text.
+function renderTocNodeHtml(node, book, depth, seenChapterIds) {
+  var hasChildren = node.subitems && node.subitems.length > 0,
+    chapter = node.chapterId ? book.chapters.filter(function(c) {
+      return c.id === node.chapterId
+    })[0] : null,
+    label = (chapter && chapter.title) || node.label || "Untitled",
+    metaId = "",
+    itemHtml;
+  if (node.chapterId && !seenChapterIds[node.chapterId]) {
+    seenChapterIds[node.chapterId] = !0;
+    metaId = ' id="meta-' + node.chapterId + '-sidebar"'
+  }
+  itemHtml = node.chapterId ?
+    '<button class="sidebar-item toc-item" data-target="' + node.chapterId + '"' + (node.anchor ? ' data-anchor="' + escapeHtml(node.anchor) + '"' : "") + '><span class="sidebar-item-title">' + escapeHtml(label) + '</span><span class="sidebar-item-meta"' + metaId + "></span></button>" :
+    '<span class="sidebar-item toc-item toc-item--unlinked"><span class="sidebar-item-title">' + escapeHtml(label) + "</span></span>";
+  return '<li class="toc-node" style="--toc-depth:' + depth + '">' +
+    '<div class="toc-row">' +
+    (hasChildren ? '<button class="toc-toggle" aria-expanded="true" aria-label="Toggle section"></button>' : '<span class="toc-toggle-spacer"></span>') +
+    itemHtml +
+    "</div>" +
+    (hasChildren ? '<ul class="toc-children">' + node.subitems.map(function(child) {
+      return renderTocNodeHtml(child, book, depth + 1, seenChapterIds)
+    }).join("") + "</ul>" : "") +
+    "</li>"
+}
+
+function renderSidebarHtml(book) {
+  if (book.toc && book.toc.length) {
+    var seenChapterIds = {};
+    return book.toc.map(function(node) {
+      return renderTocNodeHtml(node, book, 0, seenChapterIds)
+    }).join("")
+  }
+  // Fallback for books saved before nested TOC support existed, or EPUBs
+  // with no nav/NCX at all — same flat list as before.
+  return book.chapters.map(function(ch, i) {
+    return '<li><button class="sidebar-item" data-target="' + ch.id + '"><span class="sidebar-item-title">' + escapeHtml(ch.title || "Section " + (i + 1)) + '</span><span class="sidebar-item-meta" id="meta-' + ch.id + '-sidebar"></span></button></li>'
+  }).join("")
+}
+
 function rerenderChapters(book, keepPosition) {
-  if (document.querySelector(".page main").innerHTML = book.chapters.map(function(ch, i) {
-      return renderChapterPageHtml(book, ch, i, book.chapters.length)
-    }).join(""), chapterList.innerHTML = book.chapters.map(function(ch, i) {
-      return '<li><button class="sidebar-item' + (0 === i ? " is-current" : "") + '" data-target="' + ch.id + '"><span class="sidebar-item-title">' + escapeHtml(ch.title || "Section " + (i + 1)) + '</span><span class="sidebar-item-meta" id="meta-' + ch.id + '-sidebar"></span></button></li>'
-    }).join(""), chapterPages = $$(".chapter-page"), (sidebarItems = $$(".sidebar-item[data-target]")).forEach(function(item) {
-      var chapterId = item.getAttribute("data-target"),
-        titleEl = item.querySelector(".sidebar-item-title");
-      item.addEventListener("click", function(e) {
-        if (!item.classList.contains("is-renaming")) {
-          if (e.target.closest(".sidebar-item-title")) {
-            if (chapterRenameClickTimer) return void(clearTimeout(chapterRenameClickTimer), chapterRenameClickTimer = null);
-            chapterRenameClickTimer = setTimeout(function() {
-              chapterRenameClickTimer = null, showChapter(chapterId), closeSidebar()
-            }, 280);
-            return
-          }
-          showChapter(chapterId), closeSidebar()
+  document.querySelector(".page main").innerHTML = book.chapters.map(function(ch, i) {
+    return renderChapterPageHtml(book, ch, i, book.chapters.length)
+  }).join("");
+  chapterList.innerHTML = renderSidebarHtml(book);
+  chapterPages = $$(".chapter-page");
+  sidebarItems = $$(".sidebar-item[data-target]");
+  sidebarItems.forEach(function(item) {
+    var chapterId = item.getAttribute("data-target"),
+      anchorId = item.getAttribute("data-anchor"),
+      titleEl = item.querySelector(".sidebar-item-title");
+    item.addEventListener("click", function(e) {
+      if (!item.classList.contains("is-renaming")) {
+        if (e.target.closest(".sidebar-item-title")) {
+          if (chapterRenameClickTimer) return void(clearTimeout(chapterRenameClickTimer), chapterRenameClickTimer = null);
+          chapterRenameClickTimer = setTimeout(function() {
+            chapterRenameClickTimer = null, anchorId ? goToChapterAnchor(chapterId, anchorId) : (showChapter(chapterId), closeSidebar())
+          }, 280);
+          return
         }
-      }), titleEl && bindChapterTitleDblClick(item, titleEl, chapterId)
-    }), $$(".chapter-nav-btn").forEach(function(btn) {
-      btn.addEventListener("click", function() {
-        showChapter(btn.getAttribute("data-go"))
-      })
-    }), $$("[data-toc-link]").forEach(function(a) {
-      a.addEventListener("click", function(e) {
-        e.preventDefault();
-        var targetId = a.getAttribute("data-goto-chapter");
-        targetId && goToChapterAnchor(targetId, a.getAttribute("data-goto-anchor"))
-      })
-    }), keepPosition) {
+        anchorId ? goToChapterAnchor(chapterId, anchorId) : (showChapter(chapterId), closeSidebar())
+      }
+    });
+    titleEl && bindChapterTitleDblClick(item, titleEl, chapterId)
+  });
+  $$(".toc-toggle").forEach(function(toggle) {
+    toggle.addEventListener("click", function(e) {
+      e.stopPropagation();
+      var node = toggle.closest(".toc-node"),
+        expanded = "true" === toggle.getAttribute("aria-expanded");
+      toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+      node.classList.toggle("is-collapsed", expanded)
+    })
+  });
+  $$(".chapter-nav-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      showChapter(btn.getAttribute("data-go"))
+    })
+  });
+  $$("[data-toc-link]").forEach(function(a) {
+    a.addEventListener("click", function(e) {
+      e.preventDefault();
+      var targetId = a.getAttribute("data-goto-chapter");
+      targetId && goToChapterAnchor(targetId, a.getAttribute("data-goto-anchor"))
+    })
+  });
+  if (keepPosition) {
     book.chapters.some(function(c) {
       return c.id === state.currentChapter
     }) || (state.currentChapter = book.chapters[0].id)
@@ -1398,6 +1483,121 @@ function isDropType(epubType) {
   })
 }
 
+// Parse an EPUB3 nav document's <ol><li> tree into a nested structure,
+// preserving parent/child grouping (e.g. "Book One" > "Chapter 01"...).
+// Independent of the spine — resolved against chapters later.
+function parseNavToc(navDoc, navDir) {
+  function directChildOl(li) {
+    for (var i = 0; i < li.children.length; i++) {
+      var c = li.children[i];
+      if (c.tagName && "ol" === c.tagName.toLowerCase()) return c
+    }
+    return null
+  }
+
+  function parseLi(li) {
+    var directA = null;
+    Array.prototype.forEach.call(li.childNodes, function(node) {
+      directA || 1 !== node.nodeType || !node.tagName || "a" !== node.tagName.toLowerCase() || (directA = node)
+    });
+    var linkEl = directA,
+      labelText;
+    if (directA) labelText = directA.textContent.trim();
+    else {
+      linkEl = li.querySelector("a[href]");
+      var labelSrc = linkEl || li.querySelector("span");
+      if (!labelSrc) return null;
+      var clone = labelSrc.cloneNode(!0),
+        innerOl = clone.querySelector("ol");
+      innerOl && innerOl.remove(), labelText = clone.textContent.trim()
+    }
+    var rawHref = (linkEl && linkEl.getAttribute("href")) || "",
+      hashIdx = rawHref.indexOf("#"),
+      fragment = -1 !== hashIdx ? rawHref.slice(hashIdx + 1) : "",
+      hrefPath = -1 !== hashIdx ? rawHref.slice(0, hashIdx) : rawHref,
+      href = hrefPath ? resolveHref(navDir, hrefPath) : "",
+      subitems = parseOl(directChildOl(li));
+    if (!labelText && !href && !subitems.length) return null;
+    return {
+      label: labelText,
+      href: href,
+      fragment: fragment,
+      subitems: subitems
+    }
+  }
+
+  function parseOl(ol) {
+    if (!ol) return [];
+    return Array.prototype.filter.call(ol.children, function(li) {
+      return li.tagName && "li" === li.tagName.toLowerCase()
+    }).map(parseLi).filter(Boolean)
+  }
+  var navEls = Array.prototype.filter.call(navDoc.querySelectorAll("nav"), function(n) {
+      return -1 !== epubTypeTokens(n.getAttribute("epub:type")).indexOf("toc")
+    }),
+    navEl = navEls[0],
+    rootOl = (navEl && navEl.querySelector("ol")) || navDoc.querySelector("nav ol") || navDoc.querySelector("ol");
+  return parseOl(rootOl)
+}
+
+// Parse an EPUB2 NCX <navMap>'s nested <navPoint> tree into the same
+// { label, href, fragment, subitems } shape as parseNavToc.
+function parseNcxToc(ncxDoc, ncxDir) {
+  function parseNavPoint(np) {
+    var labelEl = np.getElementsByTagName("text")[0],
+      contentEl = np.getElementsByTagName("content")[0];
+    if (!labelEl || !contentEl) return null;
+    var srcRaw = contentEl.getAttribute("src") || "",
+      hashIdx = srcRaw.indexOf("#"),
+      fragment = -1 !== hashIdx ? srcRaw.slice(hashIdx + 1) : "",
+      hrefPath = -1 !== hashIdx ? srcRaw.slice(0, hashIdx) : srcRaw,
+      href = hrefPath ? resolveHref(ncxDir, hrefPath) : "",
+      label = labelEl.textContent.trim();
+    if (!href || !label) return null;
+    return {
+      label: label,
+      href: href,
+      fragment: fragment,
+      subitems: parseNavPoints(np)
+    }
+  }
+
+  function parseNavPoints(parentEl) {
+    var points = Array.prototype.filter.call(parentEl.childNodes, function(n) {
+      return n.tagName && "navpoint" === n.tagName.toLowerCase()
+    });
+    return points.map(parseNavPoint).filter(Boolean)
+  }
+  var navMapEl = ncxDoc.getElementsByTagName("navMap")[0];
+  return navMapEl ? parseNavPoints(navMapEl) : []
+}
+
+// Resolve a raw { label, href, fragment, subitems } tree (parsed above)
+// against the actual chapters we ended up loading, turning each node's
+// href/fragment into { chapterId, anchor } for navigation. Nodes that
+// don't resolve to a loaded chapter (e.g. filtered/dropped files) keep
+// chapterId: null and render as unlinked labels rather than being dropped,
+// since e.g. "Book One: Dune" often has no page of its own.
+function resolveTocTree(nodes, hrefToChapterId) {
+  if (!nodes || !nodes.length) return [];
+  var resolved = [];
+  nodes.forEach(function(node) {
+    var chapterId = node.href ? hrefToChapterId[node.href] : null;
+    if (!chapterId && node.href) try {
+      chapterId = hrefToChapterId[decodeURIComponent(node.href)]
+    } catch (e) {}
+    var subitems = resolveTocTree(node.subitems, hrefToChapterId);
+    if (!node.label && !chapterId && !subitems.length) return;
+    resolved.push({
+      label: node.label || "",
+      chapterId: chapterId || null,
+      anchor: node.fragment || null,
+      subitems: subitems
+    })
+  });
+  return resolved
+}
+
 function parseEpub(file, fileName) {
   fileName = fileName || (file && file.name) || "Untitled.epub";
   return JSZip.loadAsync(file).then(function(zip) {
@@ -1461,7 +1661,7 @@ function parseEpub(file, fileName) {
             }))
           }
         }
-        var tocPromise = Promise.resolve({}),
+        var tocPromise = Promise.resolve({ map: {}, tree: [] }),
           navItem = Array.prototype.filter.call(opfDoc.getElementsByTagName("item"), function(item) {
             return -1 !== (item.getAttribute("properties") || "").indexOf("nav")
           })[0];
@@ -1473,32 +1673,50 @@ function parseEpub(file, fileName) {
             var navDoc = (new DOMParser).parseFromString(navText, "text/html"),
               rootOl = navDoc.querySelector("nav ol") || navDoc.querySelector("ol"),
               map = {};
-            return rootOl && Array.prototype.forEach.call(rootOl.children, function(li) {
-              if (li.tagName && "li" === li.tagName.toLowerCase()) {
-                var linkEl, titleText, directA = null;
-                if (Array.prototype.forEach.call(li.childNodes, function(node) {
-                    directA || 1 !== node.nodeType || "a" !== node.tagName.toLowerCase() || (directA = node)
-                  }), directA) linkEl = directA, titleText = directA.textContent.trim();
-                else {
-                  if (!(linkEl = li.querySelector("a[href]"))) return;
-                  var clone = li.cloneNode(!0),
-                    innerOl = clone.querySelector("ol");
-                  innerOl && innerOl.remove(), titleText = clone.textContent.trim()
+            function walkNavOl(ol) {
+              Array.prototype.forEach.call(ol.children, function(li) {
+                if (li.tagName && "li" === li.tagName.toLowerCase()) {
+                  var linkEl, titleText, directA = null;
+                  if (Array.prototype.forEach.call(li.childNodes, function(node) {
+                      directA || 1 !== node.nodeType || "a" !== node.tagName.toLowerCase() || (directA = node)
+                    }), directA) linkEl = directA, titleText = directA.textContent.trim();
+                  else {
+                    linkEl = li.querySelector("a[href]");
+                    if (linkEl) {
+                      var clone = li.cloneNode(!0),
+                        innerOl = clone.querySelector("ol");
+                      innerOl && innerOl.remove(), titleText = clone.textContent.trim()
+                    }
+                  }
+                  if (linkEl) {
+                    var rawHref = linkEl.getAttribute("href") || "",
+                      hashIdx = rawHref.indexOf("#"),
+                      fragment = -1 !== hashIdx ? rawHref.slice(hashIdx + 1) : "",
+                      href = resolveHref(navDir, -1 !== hashIdx ? rawHref.slice(0, hashIdx) : rawHref);
+                    href && titleText && (map[href] || (map[href] = []), map[href].some(function(e) {
+                      return e.fragment === fragment
+                    }) || map[href].push({
+                      fragment: fragment,
+                      title: titleText
+                    }))
+                  }
+                  // Recurse into any nested <ol> so chapters grouped under a
+                  // part/section heading (e.g. "Book One: Dune" > "Chapter 01")
+                  // still get their own entry in the flat href->title map.
+                  var childOl = Array.prototype.filter.call(li.children, function(c) {
+                    return c.tagName && "ol" === c.tagName.toLowerCase()
+                  })[0];
+                  childOl && walkNavOl(childOl)
                 }
-                var rawHref = linkEl.getAttribute("href") || "",
-                  hashIdx = rawHref.indexOf("#"),
-                  fragment = -1 !== hashIdx ? rawHref.slice(hashIdx + 1) : "",
-                  href = resolveHref(navDir, -1 !== hashIdx ? rawHref.slice(0, hashIdx) : rawHref);
-                href && titleText && (map[href] || (map[href] = []), map[href].some(function(e) {
-                  return e.fragment === fragment
-                }) || map[href].push({
-                  fragment: fragment,
-                  title: titleText
-                }))
-              }
-            }), map
+              })
+            }
+            rootOl && walkNavOl(rootOl);
+            // Same nav document, parsed again as a tree that keeps nesting
+            // (e.g. "Book One: Dune" as a parent of "Chapter 01"..."Chapter 26").
+            var tree = parseNavToc(navDoc, navDir);
+            return { map: map, tree: tree }
           }).catch(function() {
-            return {}
+            return { map: {}, tree: [] }
           }))
         }
         if (!navItem) {
@@ -1510,9 +1728,10 @@ function parseEpub(file, fileName) {
               ncxDir = -1 !== ncxHref.indexOf("/") ? ncxHref.substring(0, ncxHref.lastIndexOf("/") + 1) : "",
               ncxFile = zip.file(ncxHref);
             ncxFile && (tocPromise = ncxFile.async("text").then(function(ncxText) {
-              var navMapEl = (new DOMParser).parseFromString(ncxText, "application/xml").getElementsByTagName("navMap")[0],
+              var ncxDoc = (new DOMParser).parseFromString(ncxText, "application/xml"),
+                navMapEl = ncxDoc.getElementsByTagName("navMap")[0],
                 map = {};
-              return navMapEl && Array.prototype.forEach.call(navMapEl.childNodes, function(np) {
+              navMapEl && Array.prototype.forEach.call(navMapEl.childNodes, function(np) {
                 if (np.tagName && "navpoint" === np.tagName.toLowerCase()) {
                   var labelEl = np.getElementsByTagName("text")[0],
                     contentEl = np.getElementsByTagName("content")[0];
@@ -1531,14 +1750,18 @@ function parseEpub(file, fileName) {
                     })
                   }
                 }
-              }), map
+              });
+              var tree = navMapEl ? parseNcxToc(ncxDoc, ncxDir) : [];
+              return { map: map, tree: tree }
             }).catch(function() {
-              return {}
+              return { map: {}, tree: [] }
             }))
           }
         }
         return Promise.all([tocPromise, coverHrefPromise]).then(function(resolvedPair) {
-          var tocMap = resolvedPair[0];
+          var tocResult = resolvedPair[0],
+            tocMap = tocResult.map,
+            tocTreeRaw = tocResult.tree;
           coverHref = resolvedPair[1] || coverHref;
           var chapterPromises = spineIds.map(function(id) {
             var item = manifest[id];
@@ -1591,8 +1814,9 @@ function parseEpub(file, fileName) {
             var sections = results.filter(Boolean);
             if (!sections.length) throw new Error("no readable chapters found in this file");
             var chapters = sections.map(function(s, i) {
-              var rawTitle = s.title && !isGenericChapterTitle(s.title) ? s.title : s.fallbackTitle && !isGenericChapterTitle(s.fallbackTitle) ? s.fallbackTitle : "";
-              return {
+var rawTitle = (s.title && !isGenericChapterTitle(s.title)) ? s.title
+             : (s.fallbackTitle && !isGenericChapterTitle(s.fallbackTitle)) ? s.fallbackTitle
+             : (s.title || s.fallbackTitle || "");              return {
                 id: "ch-" + i,
                 title: rawTitle.trim(),
                 originalTitle: rawTitle.trim(),
@@ -1603,6 +1827,9 @@ function parseEpub(file, fileName) {
             sections.forEach(function(s, i) {
               hrefToChapterId[s.href] = "ch-" + i
             });
+            // The real book structure, independent of the flat spine order —
+            // used to render a nested sidebar instead of "Section N" labels.
+            var resolvedToc = resolveTocTree(tocTreeRaw, hrefToChapterId);
             chapters.forEach(function(ch) {
               if (-1 === ch.html.indexOf("data-toc-href")) return;
               var wrap = document.createElement("div");
@@ -1677,6 +1904,7 @@ function parseEpub(file, fileName) {
                 originalCover: coverEntry ? coverEntry.dataUrl : null,
                 images: images,
                 chapters: chapters,
+                toc: resolvedToc,
                 addedAt: Date.now(),
                 status: "unread",
                 lastOpened: Date.now(),
@@ -2123,7 +2351,12 @@ initLibraryStorage().then(function() {
     loadingOverlay.classList.add("hidden")
   }, 400), init()
 }), window.addEventListener("beforeunload", function() {
-  saveState()
+  saveState();
+  Object.keys(persistBookDebounceTimers).forEach(function(id) {
+    clearTimeout(persistBookDebounceTimers[id]);
+    var book = libraryCache.find(function(b) { return b.id === id });
+    book && idbPutBook(book)
+  })
 });
 (function() {
   var thumb = document.getElementById("customScrollbarThumb");
