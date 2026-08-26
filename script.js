@@ -321,21 +321,87 @@ var LIBRARY_KEY = "reader_library",
   currentSort = "recent",
   isLibraryScrolled = !1;
 
+// ---- Library storage: IndexedDB-backed, with a synchronous in-memory cache ----
+// (localStorage caps out around 5-10MB total, which a full epub library blows
+// through fast. IndexedDB has a much larger quota. The rest of the app still
+// calls loadLibraryList()/saveLibraryList() synchronously, so we keep an
+// in-memory mirror that's kept authoritative, and persist it to IndexedDB in
+// the background.)
+var LIBRARY_DB_NAME = "readerLibraryDB",
+  LIBRARY_STORE = "books",
+  libraryCache = [],
+  libraryDBPromise = null;
+
+function openLibraryDB() {
+  if (libraryDBPromise) return libraryDBPromise;
+  libraryDBPromise = new Promise(function(resolve, reject) {
+    if (!window.indexedDB) { reject(new Error("IndexedDB not supported")); return }
+    var req = indexedDB.open(LIBRARY_DB_NAME, 1);
+    req.onupgradeneeded = function(e) {
+      var db = e.target.result;
+      db.objectStoreNames.contains(LIBRARY_STORE) || db.createObjectStore(LIBRARY_STORE, { keyPath: "id" })
+    };
+    req.onsuccess = function(e) { resolve(e.target.result) };
+    req.onerror = function(e) { reject(e.target.error) }
+  });
+  return libraryDBPromise
+}
+
+function idbGetAllBooks() {
+  return openLibraryDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var req = db.transaction(LIBRARY_STORE, "readonly").objectStore(LIBRARY_STORE).getAll();
+      req.onsuccess = function() { resolve(req.result || []) };
+      req.onerror = function() { reject(req.error) }
+    })
+  })
+}
+
+function idbReplaceAllBooks(list) {
+  return openLibraryDB().then(function(db) {
+    return new Promise(function(resolve, reject) {
+      var tx = db.transaction(LIBRARY_STORE, "readwrite"),
+        store = tx.objectStore(LIBRARY_STORE);
+      store.clear();
+      list.forEach(function(book) { store.put(book) });
+      tx.oncomplete = function() { resolve(!0) };
+      tx.onerror = function() { reject(tx.error) }
+    })
+  })
+}
+
+// Called once at startup before init(). Loads existing IndexedDB data into
+// the in-memory cache, or migrates old localStorage data in on first run.
+function initLibraryStorage() {
+  return idbGetAllBooks().then(function(existing) {
+    if (existing && existing.length) { libraryCache = existing; return }
+    var raw = null;
+    try { raw = localStorage.getItem(LIBRARY_KEY) } catch (e) {}
+    var oldList = [];
+    if (raw) { try { oldList = JSON.parse(raw) || [] } catch (e) { oldList = [] } }
+    libraryCache = oldList;
+    if (oldList.length) {
+      return idbReplaceAllBooks(oldList).then(function() {
+        try { localStorage.removeItem(LIBRARY_KEY) } catch (e) {}
+      })
+    }
+  }).catch(function(err) {
+    console.error("Library storage failed to initialize, starting with an empty library.", err);
+    libraryCache = []
+  })
+}
+
 function loadLibraryList() {
-  try {
-    var raw = localStorage.getItem(LIBRARY_KEY);
-    return raw ? JSON.parse(raw) : []
-  } catch (e) {
-    return []
-  }
+  return libraryCache
 }
 
 function saveLibraryList(list) {
-  try {
-    return localStorage.setItem(LIBRARY_KEY, JSON.stringify(list)), !0
-  } catch (e) {
-    return !1
-  }
+  libraryCache = list;
+  idbReplaceAllBooks(list).catch(function(err) {
+    console.error("Failed to persist library to IndexedDB", err);
+    showToast("Could not save your library changes.")
+  });
+  return !0
 }
 var currentBook = null;
 
@@ -2052,9 +2118,11 @@ window.addEventListener("scroll", onScroll, {
   passive: !0
 });
 var loadingOverlay = $("#loadingOverlay");
-setTimeout(function() {
-  loadingOverlay.classList.add("hidden")
-}, 400), init(), window.addEventListener("beforeunload", function() {
+initLibraryStorage().then(function() {
+  setTimeout(function() {
+    loadingOverlay.classList.add("hidden")
+  }, 400), init()
+}), window.addEventListener("beforeunload", function() {
   saveState()
 });
 (function() {
