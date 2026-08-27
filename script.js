@@ -2510,14 +2510,28 @@ window.addEventListener("scroll", onScroll, {
 var loadingOverlay = $("#loadingOverlay");
 initLibraryStorage().then(function() {
   loadingOverlay.classList.add("hidden"), init()
-}), window.addEventListener("beforeunload", function() {
+});
+function flushPendingBookWrites() {
   saveState();
   Object.keys(persistBookDebounceTimers).forEach(function(id) {
     clearTimeout(persistBookDebounceTimers[id]);
+    delete persistBookDebounceTimers[id];
     var book = libraryCache.find(function(b) { return b.id === id });
-    book && idbPutBook(book)
+    book && idbPutBook(book).catch(function(err) {
+      console.error("Failed to persist reading progress to IndexedDB", err)
+    })
   })
+}
+// beforeunload alone misses most tab-discard/suspend cases (background tab
+// eviction to save memory, mobile OS backgrounding) since those don't
+// reliably fire it. visibilitychange -> "hidden" and pagehide do fire in
+// those cases, so flush the debounced scroll-position write there too;
+// beforeunload stays as a last-resort catch for an actual page close.
+document.addEventListener("visibilitychange", function() {
+  document.hidden && flushPendingBookWrites()
 });
+window.addEventListener("pagehide", flushPendingBookWrites);
+window.addEventListener("beforeunload", flushPendingBookWrites);
 function setupCustomScrollbar(thumb, scrollEl) {
   if (!thumb) return null;
   var isWindow = !scrollEl || scrollEl === window,
