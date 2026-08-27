@@ -80,7 +80,7 @@ function saveState() {
   try {
     return localStorage.setItem("reader_state", JSON.stringify(state)), !0
   } catch (e) {
-    return !1
+    return console.error("Failed to save app state — storage limit likely exceeded.", e), showToast("Couldn't save your changes — storage is full. Try removing a custom font or background image."), !1
   }
 }
 
@@ -477,7 +477,37 @@ function showChapter(id, restoreScroll) {
     currentBook.lastChapter = id;
     persistCurrentBook();
   }
+  syncUrlHash();
 }
+
+// ---- URL routing (so extensions like highlighters can key storage per book/chapter) ----
+function syncUrlHash() {
+  var hash = (document.body.classList.contains("library-open") || !currentBook)
+    ? "#library"
+    : "#book/" + encodeURIComponent(currentBook.id) + "/" + encodeURIComponent(state.currentChapter);
+  if (location.hash !== hash) history.replaceState(null, "", hash);
+}
+
+function parseHashRoute() {
+  var m = /^#book\/([^\/]+)\/([^\/]+)/.exec(location.hash);
+  if (!m) return null;
+  var book = findBook(decodeURIComponent(m[1]));
+  return book ? { book: book, chapter: decodeURIComponent(m[2]) } : null;
+}
+
+window.addEventListener("hashchange", function() {
+  var route = parseHashRoute();
+  if (route) {
+    if (document.body.classList.contains("library-open")) closeLibrary();
+    if (!currentBook || currentBook.id !== route.book.id) {
+      state.currentChapter = route.chapter, loadBook(route.book);
+    } else {
+      showChapter(route.chapter, !0);
+    }
+  } else if (!currentBook || location.hash === "#library" || location.hash === "") {
+    document.body.classList.contains("library-open") || openLibrary();
+  }
+});
 
 function goToChapterAnchor(chapterId, anchorId) {
   showChapter(chapterId), closeSidebar();
@@ -1082,7 +1112,7 @@ function exitGroup() {
 }
 
 function openLibrary() {
-  closeSidebar(), closeSettings(), closeSearch(), document.body.classList.add("library-open"), libraryToggle.classList.add("is-active"), renderLibrary(), document.title = currentGroupFilter ? groupName(currentGroupFilter) : "Library", state.libraryOpen = !0, saveState()
+  closeSidebar(), closeSettings(), closeSearch(), document.body.classList.add("library-open"), libraryToggle.classList.add("is-active"), renderLibrary(), document.title = currentGroupFilter ? groupName(currentGroupFilter) : "Library", state.libraryOpen = !0, saveState(), syncUrlHash()
 }
 
 function updateReaderDocumentTitle() {
@@ -1095,7 +1125,7 @@ function updateReaderDocumentTitle() {
 }
 
 function closeLibrary() {
-  document.body.classList.remove("library-open"), libraryToggle.classList.remove("is-active"), currentGroupFilter = null, exitSelectionMode(), updateReaderDocumentTitle(), state.libraryOpen = !1, saveState()
+  document.body.classList.remove("library-open"), libraryToggle.classList.remove("is-active"), currentGroupFilter = null, exitSelectionMode(), updateReaderDocumentTitle(), state.libraryOpen = !1, saveState(), syncUrlHash()
 }
 
 function findBook(id) {
@@ -2394,8 +2424,14 @@ function init() {
     b.classList.toggle("is-selected", b.getAttribute("data-bg-size") === (state.bgSize || "auto"))
   }), renderThemeToggles(), state.activeThemeIndex >= 0 && state.activeThemeIndex < state.savedThemes.length ? (state.themeMode = "saved", applyThemeByIndex(state.activeThemeIndex)) : "custom" === state.themeMode ? (document.body.setAttribute("data-theme", "custom"), document.getElementById("themeEditor").classList.add("is-open"), customPaperInput.value = state.customPaper || "#E9E1CB", customInkInput.value = state.customInk || "#2A2419", applyCustomTheme(state.customPaper, state.customInk, "custom")) : (document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", "")), state.customBgUrl && (document.body.classList.add("has-custom-bg"), document.documentElement.style.setProperty("--custom-bg-url", 'url("' + state.customBgUrl + '")'), bgFilename.textContent = "Custom background", bgPreview.style.backgroundImage = 'url("' + state.customBgUrl + '")', bgPreview.style.display = "block");
   marginInput.value = state.margin || 12, document.documentElement.style.setProperty("--margin", (state.margin || 12) + "%");
-  var lastBook = state.lastOpenBookId ? findBook(state.lastOpenBookId) : null;
-  lastBook && loadBook(lastBook), (state.libraryOpen || !lastBook) && openLibrary()
+  var route = parseHashRoute();
+  var lastBook = route ? route.book : (state.lastOpenBookId ? findBook(state.lastOpenBookId) : null);
+  if (lastBook) {
+    if (route) state.currentChapter = route.chapter;
+    loadBook(lastBook);
+  }
+  !route && (state.libraryOpen || !lastBook) && openLibrary();
+  syncUrlHash();
 }
 window.addEventListener("scroll", onScroll, {
   passive: !0
@@ -2406,9 +2442,7 @@ window.addEventListener("scroll", onScroll, {
 });
 var loadingOverlay = $("#loadingOverlay");
 initLibraryStorage().then(function() {
-  setTimeout(function() {
-    loadingOverlay.classList.add("hidden")
-  }, 400), init()
+  loadingOverlay.classList.add("hidden"), init()
 }), window.addEventListener("beforeunload", function() {
   saveState();
   Object.keys(persistBookDebounceTimers).forEach(function(id) {

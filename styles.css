@@ -930,7 +930,7 @@ a:hover {
     opacity: 0;
     pointer-events: none;
     transition: opacity .35s ease;
-    z-index: 44
+    z-index: 29
 }
 
 .sidebar-backdrop.is-open {
@@ -2207,7 +2207,7 @@ body.library-open .touch-hint {
 
 @media (min-width:700px) {
     .library-header {
-        padding: 20px 10% 16px
+        padding: 20px 3% 16px
     }
 }
 
@@ -2584,7 +2584,7 @@ body.library-open .touch-hint {
 
 @media (min-width:700px) {
     .library-body {
-        padding: 24px 10% 40px
+        padding: 24px 3% 40px
     }
 }
 

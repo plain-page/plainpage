@@ -1,4 +1,4 @@
-// ---- Google Drive sync ----
+  // ---- Google Drive sync ----
   const CLIENT_ID = '185876513289-u805efh6lsqicckan5oa7a93v8hh0jia.apps.googleusercontent.com';
   // drive.readonly: list/download epub files from your folder
   // drive.file: create/update a small progress file this app owns
@@ -25,9 +25,14 @@
       }
     });
     // Try a silent (no popup) reconnect on page load if we've synced before.
+    // Delayed slightly so it doesn't visually compete with the app's own
+    // initial render — the brief flash some browsers show for this silent
+    // flow is otherwise easy to mistake for part of page load.
     if (localStorage.getItem('reader_drive_folder_id')) {
-      silentAttempt = true;
-      tokenClient.requestAccessToken({ prompt: 'none' });
+      setTimeout(function () {
+        silentAttempt = true;
+        tokenClient.requestAccessToken({ prompt: 'none' });
+      }, 1200);
     }
   });
   var silentAttempt = false;
@@ -41,9 +46,11 @@
   function driveSignIn() {
     if (!tokenClient) return;
     setDriveStatus('syncing', 'Connecting…');
-    // prompt:'' tries a silent re-auth first (no popup) if you've already granted access this session;
-    // if that fails it falls back to the normal consent screen.
-    tokenClient.requestAccessToken({ prompt: accessToken ? '' : 'consent' });
+    // prompt:'' lets Google decide: if you've already granted access before
+    // (and your Google session is still valid), this reconnects with little
+    // or no visible prompt. Only shows the full consent screen if you've
+    // never granted access, or revoked it.
+    tokenClient.requestAccessToken({ prompt: '' });
   }
 
   function driveFetch(url, options) {
