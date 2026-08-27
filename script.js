@@ -481,21 +481,33 @@ function showChapter(id, restoreScroll) {
 }
 
 // ---- URL routing (so extensions like highlighters can key storage per book/chapter) ----
+// Uses the query string, not the hash: highlighter/bookmarking extensions
+// typically key their storage off origin+pathname+search and deliberately
+// ignore the hash, so a hash-only scheme is invisible to them.
 function syncUrlHash() {
-  var hash = (document.body.classList.contains("library-open") || !currentBook)
-    ? "#library"
-    : "#book/" + encodeURIComponent(currentBook.id) + "/" + encodeURIComponent(state.currentChapter);
-  if (location.hash !== hash) history.replaceState(null, "", hash);
+  var params = new URLSearchParams(location.search);
+  if (document.body.classList.contains("library-open") || !currentBook) {
+    params.delete("book"), params.delete("chapter");
+  } else {
+    params.set("book", currentBook.id), params.set("chapter", state.currentChapter);
+  }
+  var qs = params.toString(),
+    url = location.pathname + (qs ? "?" + qs : "") + location.hash;
+  if (url !== location.pathname + location.search + location.hash) history.replaceState(null, "", url);
 }
 
 function parseHashRoute() {
-  var m = /^#book\/([^\/]+)\/([^\/]+)/.exec(location.hash);
-  if (!m) return null;
-  var book = findBook(decodeURIComponent(m[1]));
-  return book ? { book: book, chapter: decodeURIComponent(m[2]) } : null;
+  var params = new URLSearchParams(location.search),
+    bookId = params.get("book"),
+    chapterId = params.get("chapter");
+  if (!bookId || !chapterId) return null;
+  var book = findBook(bookId);
+  return book ? { book: book, chapter: chapterId } : null;
 }
 
-window.addEventListener("hashchange", function() {
+// popstate (not hashchange): fires on back/forward navigation and when an
+// extension opens/updates a tab with a different ?book=&chapter= query.
+window.addEventListener("popstate", function() {
   var route = parseHashRoute();
   if (route) {
     if (document.body.classList.contains("library-open")) closeLibrary();
@@ -504,7 +516,7 @@ window.addEventListener("hashchange", function() {
     } else {
       showChapter(route.chapter, !0);
     }
-  } else if (!currentBook || location.hash === "#library" || location.hash === "") {
+  } else {
     document.body.classList.contains("library-open") || openLibrary();
   }
 });
