@@ -184,6 +184,7 @@
   var freshList = loadLibraryList();
   ...
               var freshList = loadLibraryList();
+                 var idx = freshList.findIndex(function (b) { return b.driveId === f.id; });
               if (idx >= 0) {
                 // keep local reading progress, refresh content/cover only
                 book.progress = freshList[idx].progress;
