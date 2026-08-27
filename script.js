@@ -1115,25 +1115,29 @@ function updateLibraryHeader() {
   currentGroupFilter ? (libraryBackBtn.hidden = !1, libraryLabelText.textContent = groupName(currentGroupFilter), libraryLabelText.classList.add("is-editable"), libraryAddBtn.style.display = "none") : (libraryBackBtn.hidden = !0, libraryLabelText.textContent = "Library", libraryLabelText.classList.remove("is-editable"), libraryAddBtn.style.display = "")
 }
 
+function libraryDocTitle() {
+  return currentGroupFilter ? "plainpage · " + groupName(currentGroupFilter) : "plainpage · library"
+}
+
 function enterGroup(key) {
-  currentGroupFilter = key, renderLibrary(), libraryBody.scrollTop = 0, document.title = groupName(key)
+  currentGroupFilter = key, renderLibrary(), libraryBody.scrollTop = 0, document.title = libraryDocTitle()
 }
 
 function exitGroup() {
-  currentGroupFilter = null, renderLibrary(), libraryBody.scrollTop = 0, document.title = "Library"
+  currentGroupFilter = null, renderLibrary(), libraryBody.scrollTop = 0, document.title = libraryDocTitle()
 }
 
 function openLibrary() {
-  closeSidebar(), closeSettings(), closeSearch(), document.body.classList.add("library-open"), libraryToggle.classList.add("is-active"), renderLibrary(), document.title = currentGroupFilter ? groupName(currentGroupFilter) : "Library", state.libraryOpen = !0, saveState(), syncUrlHash()
+  closeSidebar(), closeSettings(), closeSearch(), document.body.classList.add("library-open"), libraryToggle.classList.add("is-active"), renderLibrary(), document.title = libraryDocTitle(), state.libraryOpen = !0, saveState(), syncUrlHash()
 }
 
 function updateReaderDocumentTitle() {
-  if (!currentBook) return void(document.title = "Reader");
+  if (!currentBook) return void(document.title = "plainpage");
   var titleCh = currentBook.chapters.find(function(c) {
     return c.id === state.currentChapter;
   });
   var chTitle = titleCh && titleCh.title ? titleCh.title.trim() : "";
-  document.title = chTitle ? (currentBook.title || "Reader") + " - " + chTitle : (currentBook.title || "Reader")
+  document.title = chTitle ? (currentBook.title || "plainpage") + " - " + chTitle : (currentBook.title || "plainpage")
 }
 
 function closeLibrary() {
@@ -1147,14 +1151,14 @@ function findBook(id) {
 }
 
 function loadBook(book) {
-  currentBook = book, state.lastOpenBookId = book.id, saveState(), document.title = book.title || "Reader", "complete" !== book.status && updateReadingStatus(book.id, "reading"), $("#bookTitle").textContent = book.title, $("#bookAuthor").textContent = book.author || "";
+  currentBook = book, state.lastOpenBookId = book.id, saveState(), document.title = book.title || "plainpage", "complete" !== book.status && updateReadingStatus(book.id, "reading"), $("#bookTitle").textContent = book.title, $("#bookAuthor").textContent = book.author || "";
   var coverEl = $("#bookCover");
 
   function tryRestore() {
     var page = document.getElementById("page-" + state.currentChapter);
     page ? page.hidden ? requestAnimationFrame(tryRestore) : restoreChapterScroll(state.currentChapter) : requestAnimationFrame(tryRestore)
   }
-  book.cover ? (coverEl.style.backgroundImage = 'url("' + book.cover + '")', coverEl.style.backgroundSize = "cover", coverEl.style.backgroundPosition = "center", coverEl.innerHTML = "") : (coverEl.style.backgroundImage = "", coverEl.innerHTML = "<span>" + escapeHtml((book.title || "?").charAt(0).toUpperCase()) + "</span>"), renderMedia(book.images || []), rerenderChapters(book, !1), setTimeout(function() {
+  book.cover ? (coverEl.style.backgroundImage = 'url("' + book.cover + '")', coverEl.style.backgroundSize = "cover", coverEl.style.backgroundPosition = "center", coverEl.innerHTML = "") : (coverEl.style.backgroundImage = "", coverEl.innerHTML = "<span>" + escapeHtml((book.title || "?").charAt(0).toUpperCase()) + "</span>"), renderMedia(book.images || []), rerenderChapters(book, !1), window.dispatchEvent(new CustomEvent("reader:chapters-rendered", { detail: { bookId: book.id } })), setTimeout(function() {
     requestAnimationFrame(tryRestore)
   }, 50)
 }
@@ -1330,7 +1334,7 @@ function deleteGroup(key) {
     }
   }), saveLibraryList(list);
   var names = loadGroupNames();
-  delete names[key], saveGroupNames(names), currentGroupFilter === key && (currentGroupFilter = null, document.title = "Library"), showToast("Group deleted."), renderLibrary()
+  delete names[key], saveGroupNames(names), currentGroupFilter === key && (currentGroupFilter = null, document.title = libraryDocTitle()), showToast("Group deleted."), renderLibrary()
 }
 groupDeleteCancel.addEventListener("click", closeGroupDeleteConfirm), groupDeleteOverlay.addEventListener("click", closeGroupDeleteConfirm), groupDeleteConfirm.addEventListener("click", function() {
   groupDeleteTarget && (deleteGroup(groupDeleteTarget), closeGroupDeleteConfirm())
@@ -1512,7 +1516,22 @@ libraryToggle.addEventListener("click", function(e) {
   e.stopPropagation(), document.body.classList.contains("library-open") ? closeLibrary() : openLibrary()
 }), libraryBody.addEventListener("scroll", function() {
   var scrollY = this.scrollTop;
-  scrollY > 80 && !isLibraryScrolled ? (isLibraryScrolled = !0, libraryHeader.classList.add("is-hidden")) : scrollY <= 80 && isLibraryScrolled && (isLibraryScrolled = !1, libraryHeader.classList.remove("is-hidden"))
+  if (scrollY > 80 && !isLibraryScrolled) {
+    isLibraryScrolled = !0;
+    libraryHeader.style.maxHeight = libraryHeader.scrollHeight + "px";
+    libraryHeader.style.overflow = "hidden";
+    requestAnimationFrame(function() {
+      libraryHeader.classList.add("is-hidden");
+      libraryHeader.style.maxHeight = "0px"
+    })
+  } else if (scrollY <= 80 && isLibraryScrolled) {
+    isLibraryScrolled = !1;
+    libraryHeader.style.overflow = "hidden";
+    libraryHeader.classList.remove("is-hidden");
+    libraryHeader.style.maxHeight = libraryHeader.scrollHeight + "px"
+  }
+}), libraryHeader.addEventListener("transitionend", function(e) {
+  "max-height" === e.propertyName && !isLibraryScrolled && (libraryHeader.style.maxHeight = "", libraryHeader.style.overflow = "")
 }), librarySortBtn.addEventListener("click", function(e) {
   e.stopPropagation(), sortDropdown.classList.toggle("is-open")
 }), sortDropdown.addEventListener("click", function(e) {
@@ -1537,7 +1556,7 @@ libraryToggle.addEventListener("click", function(e) {
     input.type = "text", input.className = "library-label-input", input.value = currentName, libraryLabelText.replaceWith(input), input.focus(), input.select(), input.addEventListener("blur", function() {
       var newName = input.value.trim() || DEFAULT_GROUP_NAMES[key] || "Group",
         names = loadGroupNames();
-      names[key] = newName, saveGroupNames(names), input.replaceWith(libraryLabelText), renderLibrary(), currentGroupFilter === key && (document.title = newName)
+      names[key] = newName, saveGroupNames(names), input.replaceWith(libraryLabelText), renderLibrary(), currentGroupFilter === key && (document.title = "plainpage · " + newName)
     }), input.addEventListener("keydown", function(ev) {
       "Enter" === ev.key && (ev.preventDefault(), input.blur()), "Escape" === ev.key && (ev.preventDefault(), input.value = currentName, input.blur())
     })
@@ -1912,7 +1931,7 @@ function parseEpub(file, fileName) {
 var rawTitle = (s.title && !isGenericChapterTitle(s.title)) ? s.title
              : (s.fallbackTitle && !isGenericChapterTitle(s.fallbackTitle)) ? s.fallbackTitle
              : (s.title || s.fallbackTitle || "");              return {
-                id: "ch-" + i,
+                id: "page-" + i,
                 title: rawTitle.trim(),
                 originalTitle: rawTitle.trim(),
                 html: s.html
@@ -1920,7 +1939,7 @@ var rawTitle = (s.title && !isGenericChapterTitle(s.title)) ? s.title
             });
             var hrefToChapterId = {};
             sections.forEach(function(s, i) {
-              hrefToChapterId[s.href] = "ch-" + i
+              hrefToChapterId[s.href] = "page-" + i
             });
             // The real book structure, independent of the flat spine order —
             // used to render a nested sidebar instead of "Section N" labels.
@@ -2352,7 +2371,9 @@ var gdriveDot = $("#gdriveDot"),
   gdriveStatusText = $("#gdriveStatusText"),
   gdriveConnect = $("#gdriveConnect"),
   gdriveFolderId = $("#gdriveFolderId"),
-  gdriveSyncNow = $("#gdriveSyncNow");
+  gdriveSyncNow = $("#gdriveSyncNow"),
+  gdriveExpandBtn = $("#gdriveExpandBtn"),
+  gdriveAdvancedRow = $("#gdriveAdvancedRow");
 gdriveFolderId.value = localStorage.getItem("reader_drive_folder_id") || "";
 gdriveFolderId.addEventListener("change", function() {
   localStorage.setItem("reader_drive_folder_id", gdriveFolderId.value.trim())
@@ -2362,6 +2383,10 @@ gdriveConnect.addEventListener("click", function() {
 });
 gdriveSyncNow.addEventListener("click", function() {
   syncWithDrive()
+});
+gdriveExpandBtn.addEventListener("click", function() {
+  var isOpen = "true" === gdriveExpandBtn.getAttribute("aria-expanded");
+  gdriveExpandBtn.setAttribute("aria-expanded", isOpen ? "false" : "true"), gdriveExpandBtn.classList.toggle("is-open", !isOpen), gdriveAdvancedRow.hidden = isOpen
 });
 document.addEventListener("keydown", function(e) {
   if ("Escape" === e.key && (groupDeleteModal.classList.contains("is-open") ? closeGroupDeleteConfirm() : selectionMode ? exitSelectionMode() : (closeSidebar(), closeSettings(), currentGroupFilter ? exitGroup() : closeLibrary())), "INPUT" !== e.target.tagName && "TEXTAREA" !== e.target.tagName)
@@ -2466,10 +2491,23 @@ initLibraryStorage().then(function() {
 function setupCustomScrollbar(thumb, scrollEl) {
   if (!thumb) return null;
   var isWindow = !scrollEl || scrollEl === window,
+    track = thumb.parentElement,
     hideTimer = null,
     dragging = false,
     dragStartY = 0,
     dragStartScroll = 0;
+
+  // For a non-window scroll container, the fixed-position track has to be
+  // repositioned to match that container's actual on-screen box every time
+  // it moves — otherwise the track (and the thumb math, which assumes the
+  // track's 0..viewH exactly covers the container) silently drifts out of
+  // sync with any header above it that resizes, hides on scroll, etc.
+  function syncTrackToContainer() {
+    if (isWindow || !track) return;
+    var r = scrollEl.getBoundingClientRect();
+    track.style.top = r.top + "px";
+    track.style.height = r.height + "px";
+  }
 
   function viewH() {
     return isWindow ? window.innerHeight : scrollEl.clientHeight
@@ -2501,9 +2539,10 @@ function setupCustomScrollbar(thumb, scrollEl) {
   }
 
   function update() {
+    syncTrackToContainer();
     var m = metrics();
     if (m.fullH <= m.viewH + 1) return void(thumb.style.opacity = "0", thumb.style.pointerEvents = "none");
-    thumb.style.pointerEvents = "auto";
+    thumb.style.opacity = "", thumb.style.pointerEvents = "auto";
     var top = scrollTop(),
       thumbTop = m.maxScroll > 0 ? top / m.maxScroll * m.maxThumbTop : 0;
     thumb.style.height = m.thumbH + "px", thumb.style.top = thumbTop + "px"
@@ -2512,7 +2551,11 @@ function setupCustomScrollbar(thumb, scrollEl) {
   function showThumb() {
     update(), thumb.classList.add("is-visible"), clearTimeout(hideTimer), hideTimer = setTimeout(function() {
       dragging || thumb.classList.remove("is-visible")
-    }, 900)
+    }, 900);
+    // A container's header can animate (e.g. hide-on-scroll) after the
+    // scroll event fires; re-sync a few times through that transition so
+    // the track doesn't lag behind mid-animation.
+    if (!isWindow) [60, 150, 320].forEach(function(d) { setTimeout(update, d) })
   }
   thumb.addEventListener("mousedown", function(e) {
     dragging = !0, dragStartY = e.clientY, dragStartScroll = scrollTop(), thumb.classList.add("is-dragging"), clearTimeout(hideTimer), e.preventDefault()

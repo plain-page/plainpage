@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Reader — Minimal eBook Reader</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>plainpage</title><link rel="icon" type="image/svg+xml" href="favicon.svg"/><link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png"/><link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png"/><link rel="apple-touch-icon" sizes="180x180" href="favicon-180.png"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -143,8 +143,14 @@
    <button class="settings-connection-action" id="gdriveConnect">
     Connect
    </button>
+   <button aria-expanded="false" aria-label="Show Drive folder settings" class="settings-connection-expand" id="gdriveExpandBtn" title="Drive folder settings">
+    <svg fill="none" height="16" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24" width="16">
+     <polyline points="6 9 12 15 18 9">
+     </polyline>
+    </svg>
+   </button>
   </div>
-  <div class="settings-connection" style="padding-top:0;">
+  <div class="settings-connection settings-connection-advanced" hidden="" id="gdriveAdvancedRow" style="padding-top:0;">
    <input class="settings-input" id="gdriveFolderId" placeholder="Drive folder ID" style="flex:1;min-width:0;" type="text" value="15hm7VGpCky4dCWOa-jUoM0V-CS14dcLk"/>
    <button class="settings-connection-action" id="gdriveSyncNow">
     Sync now

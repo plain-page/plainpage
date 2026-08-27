@@ -49,14 +49,14 @@ html::-webkit-scrollbar {
     width: 8px;
     border-radius: 6px;
     background: var(--ink);
-    opacity: 0;
+    opacity: .28;
     transition: opacity .25s ease;
     pointer-events: auto;
     cursor: pointer
 }
 
 .custom-scrollbar-thumb.is-visible {
-    opacity: .45
+    opacity: .55
 }
 
 .custom-scrollbar-thumb.is-dragging,
@@ -1485,6 +1485,42 @@ a:hover {
     cursor: default
 }
 
+.settings-connection-expand {
+    appearance: none;
+    border: none;
+    background: 0 0;
+    padding: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: color .2s ease, transform .25s ease
+}
+
+.settings-connection-expand:hover {
+    color: var(--ink)
+}
+
+.settings-connection-expand.is-open {
+    transform: rotate(180deg)
+}
+
+.settings-connection-advanced {
+    animation: settings-advanced-in .18s ease
+}
+
+@keyframes settings-advanced-in {
+    from {
+        opacity: 0
+    }
+
+    to {
+        opacity: 1
+    }
+}
+
 .settings-section {
     padding: 14px 24px 16px;
     border-bottom: 1px solid var(--hairline)
@@ -2191,7 +2227,7 @@ body.library-open .touch-hint {
     flex-shrink: 0;
     padding: 16px 24px 12px;
     border-bottom: 1px solid var(--hairline);
-    transition: transform .3s ease, border-color .35s ease, padding .3s ease;
+    transition: max-height .3s ease, padding .3s ease, border-color .35s ease;
     background: var(--paper);
     z-index: 10;
     position: sticky;
@@ -2199,10 +2235,9 @@ body.library-open .touch-hint {
 }
 
 .library-header.is-hidden {
-    position: absolute;
-    left: 0;
-    right: 0;
-    transform: translateY(-100%)
+    padding-top: 0;
+    padding-bottom: 0;
+    border-bottom-color: transparent
 }
 
 @media (min-width:700px) {
