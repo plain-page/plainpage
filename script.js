@@ -2040,7 +2040,7 @@ var rawTitle = (s.title && !isGenericChapterTitle(s.title)) ? s.title
                 toc: resolvedToc,
                 addedAt: Date.now(),
                 status: "unread",
-                lastOpened: Date.now(),
+                lastOpened: 0,
                 driveId: null,
                 driveModifiedTime: null
               }

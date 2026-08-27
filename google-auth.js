@@ -177,8 +177,13 @@
             return parseEpub(buf, f.name).then(function (book) {
               book.driveId = f.id;
               book.driveModifiedTime = f.modifiedTime;
+              return parseEpub(buf, f.name).then(function (book) {
+  book.driveId = f.id;
+  book.driveModifiedTime = f.modifiedTime;
+  book.id = 'gdrive-' + f.id;   // <-- add this: make the book's identity stable
+  var freshList = loadLibraryList();
+  ...
               var freshList = loadLibraryList();
-              var idx = freshList.findIndex(function (b) { return b.driveId === f.id; });
               if (idx >= 0) {
                 // keep local reading progress, refresh content/cover only
                 book.progress = freshList[idx].progress;
