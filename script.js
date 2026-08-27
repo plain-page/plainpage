@@ -22,7 +22,8 @@ var state = {
     wpm: 220,
     lastOpenBookId: null,
     libraryOpen: false,
-    librarySort: "recent"
+    librarySort: "recent",
+    sortByScope: {}
   },
   $ = function(s) {
     return document.querySelector(s)
@@ -1025,6 +1026,24 @@ var libraryToggle = $("#libraryToggle"),
     complete: "Completed"
   };
 
+function currentSortScopeKey() {
+  return currentGroupFilter || "library"
+}
+
+function getScopeSort(key) {
+  return state.sortByScope && state.sortByScope[key] || "recent"
+}
+
+function setScopeSort(key, sortType) {
+  state.sortByScope = state.sortByScope || {}, state.sortByScope[key] = sortType, saveState()
+}
+
+function updateSortDropdownUI() {
+  sortDropdown.querySelectorAll("button[data-sort]").forEach(function(b) {
+    b.classList.toggle("is-active", b.getAttribute("data-sort") === currentSort)
+  })
+}
+
 function loadGroupNames() {
   try {
     return JSON.parse(localStorage.getItem(GROUP_NAMES_KEY)) || {}
@@ -1120,11 +1139,11 @@ function libraryDocTitle() {
 }
 
 function enterGroup(key) {
-  currentGroupFilter = key, renderLibrary(), libraryBody.scrollTop = 0, document.title = libraryDocTitle()
+  currentGroupFilter = key, currentSort = getScopeSort(currentSortScopeKey()), updateSortDropdownUI(), renderLibrary(), libraryBody.scrollTop = 0, document.title = libraryDocTitle()
 }
 
 function exitGroup() {
-  currentGroupFilter = null, renderLibrary(), libraryBody.scrollTop = 0, document.title = libraryDocTitle()
+  currentGroupFilter = null, currentSort = getScopeSort(currentSortScopeKey()), updateSortDropdownUI(), renderLibrary(), libraryBody.scrollTop = 0, document.title = libraryDocTitle()
 }
 
 function openLibrary() {
@@ -1141,7 +1160,7 @@ function updateReaderDocumentTitle() {
 }
 
 function closeLibrary() {
-  document.body.classList.remove("library-open"), libraryToggle.classList.remove("is-active"), currentGroupFilter = null, exitSelectionMode(), updateReaderDocumentTitle(), state.libraryOpen = !1, saveState(), syncUrlHash()
+  document.body.classList.remove("library-open"), libraryToggle.classList.remove("is-active"), currentGroupFilter = null, currentSort = getScopeSort(currentSortScopeKey()), updateSortDropdownUI(), exitSelectionMode(), updateReaderDocumentTitle(), state.libraryOpen = !1, saveState(), syncUrlHash()
 }
 
 function findBook(id) {
@@ -1334,7 +1353,7 @@ function deleteGroup(key) {
     }
   }), saveLibraryList(list);
   var names = loadGroupNames();
-  delete names[key], saveGroupNames(names), currentGroupFilter === key && (currentGroupFilter = null, document.title = libraryDocTitle()), showToast("Group deleted."), renderLibrary()
+  delete names[key], saveGroupNames(names), state.sortByScope && delete state.sortByScope[key], saveState(), currentGroupFilter === key && (currentGroupFilter = null, currentSort = getScopeSort(currentSortScopeKey()), updateSortDropdownUI(), document.title = libraryDocTitle()), showToast("Group deleted."), renderLibrary()
 }
 groupDeleteCancel.addEventListener("click", closeGroupDeleteConfirm), groupDeleteOverlay.addEventListener("click", closeGroupDeleteConfirm), groupDeleteConfirm.addEventListener("click", function() {
   groupDeleteTarget && (deleteGroup(groupDeleteTarget), closeGroupDeleteConfirm())
@@ -1536,7 +1555,7 @@ libraryToggle.addEventListener("click", function(e) {
   e.stopPropagation(), sortDropdown.classList.toggle("is-open")
 }), sortDropdown.addEventListener("click", function(e) {
   var btn = e.target.closest("button[data-sort]");
-  btn && (currentSort = btn.getAttribute("data-sort"), state.librarySort = currentSort, saveState(), sortDropdown.querySelectorAll("button").forEach(function(b) {
+  btn && (currentSort = btn.getAttribute("data-sort"), setScopeSort(currentSortScopeKey(), currentSort), sortDropdown.querySelectorAll("button").forEach(function(b) {
     b.classList.remove("is-active")
   }), btn.classList.add("is-active"), sortDropdown.classList.remove("is-open"), renderLibrary())
 }), document.addEventListener("click", function(e) {
@@ -2453,10 +2472,10 @@ function addChapterBylines() {
 
 function init() {
   loadState();
-  currentSort = state.librarySort || "recent";
-  sortDropdown.querySelectorAll("button[data-sort]").forEach(function(b) {
-    b.classList.toggle("is-active", b.getAttribute("data-sort") === currentSort)
-  });
+  state.sortByScope = state.sortByScope || {};
+  "library" in state.sortByScope || (state.sortByScope.library = state.librarySort || "recent");
+  currentSort = getScopeSort(currentSortScopeKey());
+  updateSortDropdownUI();
   bodySizeInput.value = state.bodySize, bodySpacingInput.value = state.bodySpacing, bodyIndentInput.value = state.bodyIndent, applyBodyTypography(), applyTitleFont(), applyAuthorFont(), addChapterBylines(), renderFontToggles(), renderSavedThemesList(), updateCustomFontRowVisibility(), state.customFontName && (customFontNameInput.value = state.customFontName, state.customFontUrl && (fontStatus.textContent = "Loaded")), document.documentElement.style.setProperty("--bg-size", state.bgSize || "auto"), bgSizeGroup.querySelectorAll(".toggle-btn").forEach(function(b) {
     b.classList.toggle("is-selected", b.getAttribute("data-bg-size") === (state.bgSize || "auto"))
   }), renderThemeToggles(), state.activeThemeIndex >= 0 && state.activeThemeIndex < state.savedThemes.length ? (state.themeMode = "saved", applyThemeByIndex(state.activeThemeIndex)) : "custom" === state.themeMode ? (document.body.setAttribute("data-theme", "custom"), document.getElementById("themeEditor").classList.add("is-open"), customPaperInput.value = state.customPaper || "#E9E1CB", customInkInput.value = state.customInk || "#2A2419", applyCustomTheme(state.customPaper, state.customInk, "custom")) : (document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", "")), state.customBgUrl && (document.body.classList.add("has-custom-bg"), document.documentElement.style.setProperty("--custom-bg-url", 'url("' + state.customBgUrl + '")'), bgFilename.textContent = "Custom background", bgPreview.style.backgroundImage = 'url("' + state.customBgUrl + '")', bgPreview.style.display = "block");
