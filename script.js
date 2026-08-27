@@ -476,7 +476,18 @@ function showChapter(id, restoreScroll) {
   saveState();
   if (currentBook) {
     currentBook.lastChapter = id;
-    persistCurrentBook();
+    // Which chapter we're on changes rarely (only on navigation, not on
+    // every scroll tick) and reopening the book depends on it being
+    // correct, so persist it right away instead of going through the
+    // debounced write used for scroll-fraction updates. That debounce
+    // relies on 'beforeunload' to flush, which isn't reliable for an
+    // actual browser close (especially on mobile), so a chapter change
+    // right before closing the app could otherwise be lost.
+    var idx = libraryCache.findIndex(function(b) { return b.id === currentBook.id });
+    idx !== -1 ? libraryCache[idx] = currentBook : libraryCache.push(currentBook);
+    idbPutBook(currentBook).catch(function(err) {
+      console.error("Failed to persist current chapter", err)
+    });
   }
   syncUrlHash();
 }
