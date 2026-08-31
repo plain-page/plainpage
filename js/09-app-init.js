@@ -74,13 +74,14 @@ function init() {
   }), renderThemeToggles(), state.activeThemeIndex >= 0 && state.activeThemeIndex < state.savedThemes.length ? (state.themeMode = "saved", applyThemeByIndex(state.activeThemeIndex)) : "custom" === state.themeMode ? (document.body.setAttribute("data-theme", "custom"), document.getElementById("themeEditor").classList.add("is-open"), customPaperInput.value = state.customPaper || "#E9E1CB", customInkInput.value = state.customInk || "#2A2419", applyCustomTheme(state.customPaper, state.customInk, "custom")) : (document.body.removeAttribute("data-theme"), document.documentElement.style.setProperty("--paper", ""), document.documentElement.style.setProperty("--ink", ""), document.documentElement.style.setProperty("--ink-rgb", "")), state.customBgUrl && (document.body.classList.add("has-custom-bg"), document.documentElement.style.setProperty("--custom-bg-url", 'url("' + state.customBgUrl + '")'), bgFilename.textContent = "Custom background", bgPreview.style.backgroundImage = 'url("' + state.customBgUrl + '")', bgPreview.style.display = "block");
   marginInput.value = state.margin || 12, document.documentElement.style.setProperty("--margin", (state.margin || 12) + "%");
   var route = parseHashRoute();
-  var lastBook = route ? route.book : (state.lastOpenBookId ? findBook(state.lastOpenBookId) : null);
+  var routedBook = route ? route.book : null;
   var bookLoadPromise = Promise.resolve();
-  if (lastBook) {
-    if (route) state.currentChapter = route.chapter;
-    bookLoadPromise = loadBook(lastBook);
+  if (routedBook) {
+    state.currentChapter = route.chapter;
+    bookLoadPromise = loadBook(routedBook);
+  } else {
+    openLibrary();
   }
-  !route && (state.libraryOpen || !lastBook) && openLibrary();
   syncUrlHash();
   return bookLoadPromise
 }

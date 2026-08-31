@@ -21,11 +21,11 @@ function updateStorageUsage() {
   navigator.storage.estimate().then(function(est) {
     var used = est.usage || 0,
       quota = est.quota || 0,
-      usedMb = (used / (1024 * 1024)).toFixed(1);
-    if (!quota) return void(textEl.textContent = usedMb + " MB used.");
+      usedGb = (used / (1024 * 1024 * 1024)).toFixed(2);
+    if (!quota) return void(textEl.textContent = usedGb + " GB used.");
     var pct = Math.min(100, used / quota * 100),
-      quotaMb = (quota / (1024 * 1024)).toFixed(0);
-    barEl && (barEl.style.width = pct.toFixed(1) + "%"), textEl.textContent = usedMb + " MB used of about " + quotaMb + " MB available (" + pct.toFixed(1) + "%)."
+      quotaGb = (quota / (1024 * 1024 * 1024)).toFixed(2);
+    barEl && (barEl.style.width = pct.toFixed(1) + "%"), textEl.textContent = usedGb + " GB used of about " + quotaGb + " GB available (" + pct.toFixed(1) + "%)."
   }).catch(function() {
     textEl.textContent = "Couldn't check storage usage."
   })

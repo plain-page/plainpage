@@ -145,6 +145,8 @@ function updateReadingProgress() {
         fraction = scrollable > 0 ? Math.min(1, Math.max(0, -bodyRect.top / scrollable)) : 1,
         key = progressKey(state.currentChapter);
       state.progress[key] = fraction, currentBook && saveState();
+      var hintEl = $("#shortcutsHint");
+      hintEl && (hintEl.textContent = Math.round(100 * fraction) + "% done reading");
       var totalProgress = 0,
         chapters = $$(".chapter-page"),
         count = 0;
