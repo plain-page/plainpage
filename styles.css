@@ -2561,7 +2561,7 @@ body.library-open .touch-hint {
 
 .group-tile {
     flex-shrink: 0;
-    width: 190px;
+    width: 148px;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent
 }
@@ -2719,20 +2719,20 @@ body.library-open .touch-hint {
 }
 
 [data-shelf-row="groups"] {
-    gap: 84px;
-    padding-left: 44px
+    gap: 60px;
+    padding-left: 34px
 }
 
 @media (max-width:700px) {
     .group-tile {
-        width: 132px
+        width: 100px
     }
     .library-shelf-row {
         gap: 16px
     }
     [data-shelf-row="groups"] {
-        gap: 50px;
-        padding-left: 28px
+        gap: 34px;
+        padding-left: 20px
     }
 }
 
