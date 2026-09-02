@@ -1248,6 +1248,15 @@ a:hover {
     display: none !important
 }
 
+.chapter-body h1,
+.chapter-body h2,
+.chapter-body h3,
+.chapter-body h4,
+.chapter-body h5,
+.chapter-body h6 {
+    text-align: center !important
+}
+
 .sidebar-media-empty {
     padding: 10px 22px 24px;
     color: var(--ink-quiet);
