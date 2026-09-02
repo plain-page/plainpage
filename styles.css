@@ -6,12 +6,13 @@
     --paper: #E9E1CB;
     --ink: #2A2419;
     --ink-rgb: 42, 36, 25;
+    --shadow-rgb: 0, 0, 0;
     --ink-soft: #4A4230;
-    --ink-quiet: #8B8066;
+    --ink-quiet: rgba(var(--ink-rgb), .30);
     --ink-hover: #3D362A;
-    --hairline: #D9CFB4;
-    --panel-shadow: rgba(42, 36, 25, 0.14);
-    --scrim: rgba(42, 36, 25, 0.22);
+    --hairline: rgba(var(--ink-rgb), .05);
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --search-highlight: #F5E6A3;
     --search-current: #E8C84A;
     --margin: 10%;
@@ -93,11 +94,9 @@ html::-webkit-scrollbar {
 
 body[data-theme=custom] {
     --ink-soft: var(--custom-ink-soft, #4A4230);
-    --ink-quiet: var(--custom-ink-quiet, #8B8066);
     --ink-hover: var(--custom-ink-hover, #3D362A);
-    --hairline: var(--custom-hairline, #D9CFB4);
-    --panel-shadow: var(--custom-panel-shadow, rgba(42, 36, 25, 0.14));
-    --scrim: var(--custom-scrim, rgba(42, 36, 25, 0.22));
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --paper: var(--custom-paper, #E9E1CB);
     --ink: var(--custom-ink, #2A2419);
     --ink-rgb: var(--custom-ink-rgb, 42, 36, 25)
@@ -105,11 +104,9 @@ body[data-theme=custom] {
 
 body[data-theme=saved-0] {
     --ink-soft: var(--theme-0-ink-soft, #4A4230);
-    --ink-quiet: var(--theme-0-ink-quiet, #8B8066);
     --ink-hover: var(--theme-0-ink-hover, #3D362A);
-    --hairline: var(--theme-0-hairline, #D9CFB4);
-    --panel-shadow: var(--theme-0-panel-shadow, rgba(42, 36, 25, 0.14));
-    --scrim: var(--theme-0-scrim, rgba(42, 36, 25, 0.22));
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --paper: var(--theme-0-paper, #E9E1CB);
     --ink: var(--theme-0-ink, #2A2419);
     --ink-rgb: var(--theme-0-ink-rgb, 42, 36, 25)
@@ -117,11 +114,9 @@ body[data-theme=saved-0] {
 
 body[data-theme=saved-1] {
     --ink-soft: var(--theme-1-ink-soft, #4A4230);
-    --ink-quiet: var(--theme-1-ink-quiet, #8B8066);
     --ink-hover: var(--theme-1-ink-hover, #3D362A);
-    --hairline: var(--theme-1-hairline, #D9CFB4);
-    --panel-shadow: var(--theme-1-panel-shadow, rgba(42, 36, 25, 0.14));
-    --scrim: var(--theme-1-scrim, rgba(42, 36, 25, 0.22));
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --paper: var(--theme-1-paper, #E9E1CB);
     --ink: var(--theme-1-ink, #2A2419);
     --ink-rgb: var(--theme-1-ink-rgb, 42, 36, 25)
@@ -129,11 +124,9 @@ body[data-theme=saved-1] {
 
 body[data-theme=saved-2] {
     --ink-soft: var(--theme-2-ink-soft, #4A4230);
-    --ink-quiet: var(--theme-2-ink-quiet, #8B8066);
     --ink-hover: var(--theme-2-ink-hover, #3D362A);
-    --hairline: var(--theme-2-hairline, #D9CFB4);
-    --panel-shadow: var(--theme-2-panel-shadow, rgba(42, 36, 25, 0.14));
-    --scrim: var(--theme-2-scrim, rgba(42, 36, 25, 0.22));
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --paper: var(--theme-2-paper, #E9E1CB);
     --ink: var(--theme-2-ink, #2A2419);
     --ink-rgb: var(--theme-2-ink-rgb, 42, 36, 25)
@@ -141,11 +134,9 @@ body[data-theme=saved-2] {
 
 body[data-theme=saved-3] {
     --ink-soft: var(--theme-3-ink-soft, #4A4230);
-    --ink-quiet: var(--theme-3-ink-quiet, #8B8066);
     --ink-hover: var(--theme-3-ink-hover, #3D362A);
-    --hairline: var(--theme-3-hairline, #D9CFB4);
-    --panel-shadow: var(--theme-3-panel-shadow, rgba(42, 36, 25, 0.14));
-    --scrim: var(--theme-3-scrim, rgba(42, 36, 25, 0.22));
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --paper: var(--theme-3-paper, #E9E1CB);
     --ink: var(--theme-3-ink, #2A2419);
     --ink-rgb: var(--theme-3-ink-rgb, 42, 36, 25)
@@ -153,11 +144,9 @@ body[data-theme=saved-3] {
 
 body[data-theme=saved-4] {
     --ink-soft: var(--theme-4-ink-soft, #4A4230);
-    --ink-quiet: var(--theme-4-ink-quiet, #8B8066);
     --ink-hover: var(--theme-4-ink-hover, #3D362A);
-    --hairline: var(--theme-4-hairline, #D9CFB4);
-    --panel-shadow: var(--theme-4-panel-shadow, rgba(42, 36, 25, 0.14));
-    --scrim: var(--theme-4-scrim, rgba(42, 36, 25, 0.22));
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --paper: var(--theme-4-paper, #E9E1CB);
     --ink: var(--theme-4-ink, #2A2419);
     --ink-rgb: var(--theme-4-ink-rgb, 42, 36, 25)
@@ -165,11 +154,9 @@ body[data-theme=saved-4] {
 
 body[data-theme=saved-5] {
     --ink-soft: var(--theme-5-ink-soft, #4A4230);
-    --ink-quiet: var(--theme-5-ink-quiet, #8B8066);
     --ink-hover: var(--theme-5-ink-hover, #3D362A);
-    --hairline: var(--theme-5-hairline, #D9CFB4);
-    --panel-shadow: var(--theme-5-panel-shadow, rgba(42, 36, 25, 0.14));
-    --scrim: var(--theme-5-scrim, rgba(42, 36, 25, 0.22));
+    --panel-shadow: rgba(var(--shadow-rgb), 0.14);
+    --scrim: rgba(var(--shadow-rgb), 0.22);
     --paper: var(--theme-5-paper, #E9E1CB);
     --ink: var(--theme-5-ink, #2A2419);
     --ink-rgb: var(--theme-5-ink-rgb, 42, 36, 25)
@@ -986,7 +973,7 @@ a:hover {
     flex-shrink: 0;
     border-radius: 2px;
     background: linear-gradient(155deg, #4a4230, #7a6947);
-    box-shadow: 0 2px 8px rgba(var(--ink-rgb), .2);
+    box-shadow: 0 2px 8px rgba(var(--shadow-rgb), .2);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1280,14 +1267,14 @@ a:hover {
     background: linear-gradient(155deg, #4a4230, #7a6947);
     background-size: cover;
     background-position: center;
-    box-shadow: 0 2px 6px rgba(var(--ink-rgb), .2);
+    box-shadow: 0 2px 6px rgba(var(--shadow-rgb), .2);
     transition: transform .2s ease, box-shadow .2s ease
 }
 
 .sidebar-media-tile:focus-visible .sidebar-media-thumb,
 .sidebar-media-tile:hover .sidebar-media-thumb {
     transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(var(--ink-rgb), .28)
+    box-shadow: 0 4px 10px rgba(var(--shadow-rgb), .28)
 }
 
 .sidebar-media-caption {
@@ -2374,34 +2361,6 @@ body.library-open .touch-hint {
     background: var(--hairline)
 }
 
-.library-menu-storage {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 4px 16px 6px
-}
-
-.library-menu-storage-track {
-    height: 5px;
-    border-radius: 3px;
-    background: var(--hairline);
-    overflow: hidden
-}
-
-.library-menu-storage-bar {
-    height: 100%;
-    width: 0%;
-    background: var(--ink-quiet);
-    border-radius: 3px;
-    transition: width .3s ease
-}
-
-.library-menu-storage-text {
-    font-family: system-ui, sans-serif;
-    font-size: .72rem;
-    color: var(--ink-soft);
-    line-height: 1.3
-}
 
 .context-menu {
     position: fixed;
@@ -2410,7 +2369,7 @@ body.library-open .touch-hint {
     background: var(--paper);
     border: 1px solid var(--hairline);
     border-radius: 8px;
-    box-shadow: 0 16px 40px var(--panel-shadow), 0 3px 10px rgba(var(--ink-rgb), .12);
+    box-shadow: 0 16px 40px var(--panel-shadow), 0 3px 10px rgba(var(--shadow-rgb), .12);
     padding: 6px 0;
     min-width: 148px;
     display: none;
@@ -2563,7 +2522,7 @@ body.library-open .touch-hint {
 
 .group-tile {
     flex-shrink: 0;
-    width: 148px;
+    width: clamp(112px, 8.6vw + 84px, 220px);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent
 }
@@ -2579,7 +2538,7 @@ body.library-open .touch-hint {
     inset: 0;
     border-radius: 10px;
     background: var(--hairline);
-    box-shadow: 0 2px 6px rgba(var(--ink-rgb), .1);
+    box-shadow: 0 2px 6px rgba(var(--shadow-rgb), .1);
     transition: transform .25s ease, box-shadow .25s ease, opacity .25s ease
 }
 
@@ -2604,7 +2563,7 @@ body.library-open .touch-hint {
 .group-tile-card.layer-0 {
     z-index: 4;
     overflow: hidden;
-    box-shadow: 0 10px 24px rgba(var(--ink-rgb), .3), 0 3px 8px rgba(var(--ink-rgb), .2)
+    box-shadow: 0 10px 24px rgba(var(--shadow-rgb), .3), 0 3px 8px rgba(var(--shadow-rgb), .2)
 }
 
 .group-tile-card.layer-1,
@@ -2659,19 +2618,13 @@ body.library-open .touch-hint {
 
 .library-tile-shelf {
     flex-shrink: 0;
-    width: 150px;
-    box-shadow: 0 4px 10px rgba(var(--ink-rgb), .18)
+    width: clamp(100px, 7.4vw + 72px, 190px);
+    box-shadow: 0 4px 10px rgba(var(--shadow-rgb), .18)
 }
 
 .library-tile-shelf:hover {
-    box-shadow: 0 6px 14px rgba(var(--ink-rgb), .24);
+    box-shadow: 0 6px 14px rgba(var(--shadow-rgb), .24);
     transform: none
-}
-
-@media (max-width:700px) {
-    .library-tile-shelf {
-        width: 112px
-    }
 }
 
 .group-tile.is-hidden-group .group-tile-stack {
@@ -2707,7 +2660,7 @@ body.library-open .touch-hint {
 
 .group-tile:hover .layer-0 {
     transform: translateY(-4px);
-    box-shadow: 0 16px 34px rgba(var(--ink-rgb), .36)
+    box-shadow: 0 16px 34px rgba(var(--shadow-rgb), .36)
 }
 
 .group-tile-label {
@@ -2727,19 +2680,16 @@ body.library-open .touch-hint {
 }
 
 [data-shelf-row="groups"] {
-    gap: 60px;
+    gap: 112px;
     padding-left: 34px
 }
 
 @media (max-width:700px) {
-    .group-tile {
-        width: 100px
-    }
     .library-shelf-row {
         gap: 16px
     }
     [data-shelf-row="groups"] {
-        gap: 34px;
+        gap: 60px;
         padding-left: 20px
     }
 }
@@ -2779,13 +2729,13 @@ body.library-open .touch-hint {
     border-radius: 12px;
     overflow: hidden;
     background: var(--hairline);
-    box-shadow: 0 8px 20px rgba(var(--ink-rgb), .28), 0 2px 6px rgba(var(--ink-rgb), .18);
+    box-shadow: 0 8px 20px rgba(var(--shadow-rgb), .28), 0 2px 6px rgba(var(--shadow-rgb), .18);
     transition: box-shadow .2s ease, transform .2s ease;
     cursor: pointer
 }
 
 .library-tile:hover {
-    box-shadow: 0 14px 34px rgba(var(--ink-rgb), .4), 0 4px 10px rgba(var(--ink-rgb), .22);
+    box-shadow: 0 14px 34px rgba(var(--shadow-rgb), .4), 0 4px 10px rgba(var(--shadow-rgb), .22);
     transform: translateY(-2px)
 }
 
@@ -2848,7 +2798,7 @@ body.library-open .touch-hint {
 }
 
 .library-tile.is-selected {
-    box-shadow: 0 0 0 1px var(--ink), 0 0 0 3px var(--ink), inset 0 0 0 1px var(--ink), 0 8px 24px rgba(var(--ink-rgb), .2)
+    box-shadow: 0 0 0 1px var(--ink), 0 0 0 3px var(--ink), inset 0 0 0 1px var(--ink), 0 8px 24px rgba(var(--shadow-rgb), .2)
 }
 
 .library-tile.is-selected::after {
