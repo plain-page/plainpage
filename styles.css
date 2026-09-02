@@ -49,6 +49,8 @@ body {
 .book-info-desc-text,
 .group-tile-label,
 .placeholder,
+.footnote-popup-body,
+.footnote-popup-body *,
 input,
 textarea {
     text-transform: none
@@ -3351,4 +3353,92 @@ body.library-open .touch-hint {
     75% {
         content: '...'
     }
+}
+
+.footnote-popup-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 70;
+    background: transparent
+}
+
+.footnote-popup {
+    position: fixed;
+    width: 340px;
+    max-width: calc(100vw - 32px);
+    max-height: 70vh;
+    overflow-y: auto;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    box-shadow: 0 10px 30px var(--panel-shadow);
+    padding: 18px 22px 18px 18px;
+    font-family: var(--body-font);
+    font-size: 0.95rem;
+    line-height: 1.6
+}
+
+.footnote-popup-close {
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    background: none;
+    border: none;
+    color: var(--ink-quiet);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 6px 10px
+}
+
+.footnote-popup-close:hover {
+    color: var(--ink)
+}
+
+.footnote-popup-body p {
+    margin: 0 0 0.6em
+}
+
+.footnote-popup-body p:last-child {
+    margin-bottom: 0
+}
+
+@media (max-width: 640px) {
+    .footnote-popup-overlay {
+        background: var(--scrim);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px
+    }
+    .footnote-popup {
+        position: static;
+        width: 100%;
+        max-width: 420px
+    }
+}
+
+body.drag-over-files {
+    position: relative
+}
+
+body.drag-over-files::after {
+    content: "Drop .epub files to add them to your library";
+    position: fixed;
+    inset: 16px;
+    z-index: 80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+    border: 2px dashed var(--ink-quiet);
+    border-radius: 12px;
+    background: rgba(var(--ink-rgb), 0.06);
+    color: var(--ink);
+    font-family: var(--body-font);
+    font-size: 1.1rem;
+    pointer-events: none;
+    text-transform: none
 }
