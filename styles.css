@@ -2506,7 +2506,7 @@ body.library-open .touch-hint {
     overflow-x: auto;
     scroll-behavior: smooth;
     scrollbar-width: none;
-    padding: 4px 6px 10px
+    padding: 10px 8px 45px 0px;
 }
 
 .library-shelf-row::-webkit-scrollbar {
@@ -2659,7 +2659,13 @@ body.library-open .touch-hint {
 
 .library-tile-shelf {
     flex-shrink: 0;
-    width: 150px
+    width: 150px;
+    box-shadow: 0 4px 10px rgba(var(--ink-rgb), .18)
+}
+
+.library-tile-shelf:hover {
+    box-shadow: 0 6px 14px rgba(var(--ink-rgb), .24);
+    transform: none
 }
 
 @media (max-width:700px) {
