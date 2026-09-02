@@ -11,6 +11,7 @@
     --ink-quiet: rgba(var(--ink-rgb), .30);
     --ink-hover: #3D362A;
     --hairline: rgba(var(--ink-rgb), .05);
+    --hairline-contrast: rgba(128, 128, 128, .35);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
     --scrim: rgba(var(--shadow-rgb), 0.22);
     --search-highlight: #F5E6A3;
@@ -93,6 +94,7 @@ html::-webkit-scrollbar {
 }
 
 body[data-theme=custom] {
+    --hairline: var(--custom-hairline, rgba(var(--ink-rgb), .05));
     --ink-soft: var(--custom-ink-soft, #4A4230);
     --ink-hover: var(--custom-ink-hover, #3D362A);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
@@ -103,6 +105,7 @@ body[data-theme=custom] {
 }
 
 body[data-theme=saved-0] {
+    --hairline: var(--theme-0-hairline, rgba(var(--ink-rgb), .05));
     --ink-soft: var(--theme-0-ink-soft, #4A4230);
     --ink-hover: var(--theme-0-ink-hover, #3D362A);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
@@ -113,6 +116,7 @@ body[data-theme=saved-0] {
 }
 
 body[data-theme=saved-1] {
+    --hairline: var(--theme-1-hairline, rgba(var(--ink-rgb), .05));
     --ink-soft: var(--theme-1-ink-soft, #4A4230);
     --ink-hover: var(--theme-1-ink-hover, #3D362A);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
@@ -123,6 +127,7 @@ body[data-theme=saved-1] {
 }
 
 body[data-theme=saved-2] {
+    --hairline: var(--theme-2-hairline, rgba(var(--ink-rgb), .05));
     --ink-soft: var(--theme-2-ink-soft, #4A4230);
     --ink-hover: var(--theme-2-ink-hover, #3D362A);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
@@ -133,6 +138,7 @@ body[data-theme=saved-2] {
 }
 
 body[data-theme=saved-3] {
+    --hairline: var(--theme-3-hairline, rgba(var(--ink-rgb), .05));
     --ink-soft: var(--theme-3-ink-soft, #4A4230);
     --ink-hover: var(--theme-3-ink-hover, #3D362A);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
@@ -143,6 +149,7 @@ body[data-theme=saved-3] {
 }
 
 body[data-theme=saved-4] {
+    --hairline: var(--theme-4-hairline, rgba(var(--ink-rgb), .05));
     --ink-soft: var(--theme-4-ink-soft, #4A4230);
     --ink-hover: var(--theme-4-ink-hover, #3D362A);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
@@ -153,6 +160,7 @@ body[data-theme=saved-4] {
 }
 
 body[data-theme=saved-5] {
+    --hairline: var(--theme-5-hairline, rgba(var(--ink-rgb), .05));
     --ink-soft: var(--theme-5-ink-soft, #4A4230);
     --ink-hover: var(--theme-5-ink-hover, #3D362A);
     --panel-shadow: rgba(var(--shadow-rgb), 0.14);
@@ -2817,7 +2825,8 @@ body.library-open .touch-hint {
     height: 22px;
     border-radius: 50%;
     background: rgba(0, 0, 0, .32);
-    border: 1.5px solid rgba(233, 225, 203, .85);
+    border: 2px solid rgba(233, 225, 203, .9);
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .25);
     backdrop-filter: blur(2px);
     display: flex;
     align-items: center;
