@@ -1254,7 +1254,8 @@ a:hover {
 .chapter-body h4,
 .chapter-body h5,
 .chapter-body h6 {
-    text-align: center !important
+    text-align: center !important;
+    font-weight: normal !important;
 }
 
 .sidebar-media-empty {
