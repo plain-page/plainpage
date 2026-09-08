@@ -57,7 +57,10 @@ input,
 textarea {
     text-transform: none
 }
-
+hr {
+	color: transparent;
+	padding: 15px 0px;
+}
 html::-webkit-scrollbar {
     display: none
 }
