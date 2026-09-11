@@ -1979,6 +1979,15 @@ main {
     margin-bottom: .6rem
 }
 
+.chapter-byline .cb-title {
+	font-family: var(--title-font);
+	font-size: 2.6rem;
+	font-weight: 500;
+	letter-spacing: .01em;
+	color: var(--ink);
+	display: block;
+}
+
 .chapter-byline .cb-by {
 	font-family: var(--author-font);
 	font-style: normal;
@@ -1987,16 +1996,6 @@ main {
 	color: var(--ink);
 	display: block;
 	margin-top: .1rem;
-}
-
-.chapter-byline .cb-by {
-    font-family: var(--author-font);
-    font-style: italic;
-    font-size: 1rem;
-    letter-spacing: .03em;
-    color: var(--ink);
-    display: block;
-    margin-top: .1rem
 }
 
 .chapter-divider {
