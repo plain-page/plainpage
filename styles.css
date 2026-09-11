@@ -2009,14 +2009,14 @@ main {
 }
 
 .chapter-meta {
-    font-family: system-ui, sans-serif;
-    font-size: 11px;
-    line-height: 1.4;
-    letter-spacing: .04em;
-    color: var(--ink);
-    margin: .7rem 0 0 0;
-    text-align: center;
-    transition: color .35s ease
+	font-family: var(--author-font);
+	font-size: 11px;
+	line-height: 1.4;
+	letter-spacing: .04em;
+	color: var(--ink);
+	margin: .7rem 0 0 0;
+	text-align: center;
+	transition: color .35s ease;
 }
 
 .chapter-head--no-divider .chapter-meta {
