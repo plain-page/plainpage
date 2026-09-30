@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>plainpage</title><link rel="icon" type="image/png" sizes="96x96" href="favicons/favicon-light-96.png" media="(prefers-color-scheme: light)"/><link rel="icon" type="image/png" sizes="16x16" href="favicons/favicon-light-16.png" media="(prefers-color-scheme: light)"/><link rel="icon" type="image/png" sizes="96x96" href="favicons/favicon-dark-96.png" media="(prefers-color-scheme: dark)"/><link rel="icon" type="image/png" sizes="16x16" href="favicons/favicon-dark-16.png" media="(prefers-color-scheme: dark)"/><link rel="apple-touch-icon" sizes="180x180" href="favicons/favicon-180.png"/><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&family=Inter:wght@400;500&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="styles.css">
-</head>
+<style>.book-info-title-input{width:100%;box-sizing:border-box;font:inherit;font-size:1.2rem;text-align:center;padding:6px 8px;margin:0 0 6px;border:1px solid var(--hairline);border-radius:6px;background:transparent;color:var(--ink)}.book-info-fetch{display:flex;justify-content:center;align-items:center;gap:14px}</style></head>
 <body>
  <div class="custom-scrollbar-track" aria-hidden="true">
   <div class="custom-scrollbar-thumb" id="customScrollbarThumb"></div>
@@ -399,6 +399,7 @@
   <h2 class="book-info-title" id="infoTitle">
    book title
   </h2>
+  <input class="book-info-title-input" hidden="" id="infoTitleInput" maxlength="300" placeholder="title" type="text"/>
   <p class="book-info-author" id="infoAuthor">
    author
   </p>
@@ -427,6 +428,9 @@
    <button class="book-info-fetch-btn" id="infoFetchBtn" type="button">
     fetch details
    </button>
+   <button class="book-info-desc-edit-btn" id="infoDescEditBtn">
+    edit
+   </button>
   </div>
   <div class="book-info-divider">
   </div>
@@ -435,9 +439,6 @@
     <span class="book-info-desc-label">
      description
     </span>
-    <button class="book-info-desc-edit-btn" id="infoDescEditBtn">
-     edit
-    </button>
    </div>
    <div class="book-info-desc-text" id="infoDescText">
     no description yet.
