@@ -20,6 +20,7 @@
     --text-scale: 1;
     --line-height: 1.8;
     --text-indent: 24px;
+    --para-gap: 0px;
     --body-font: "Newsreader", Georgia, serif;
     --title-font: "Newsreader", Georgia, serif;
     --author-font: "Newsreader", Georgia, serif;
@@ -1392,6 +1393,19 @@ a:hover {
     flex-shrink: 0
 }
 
+.settings-header-left {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    min-width: 0
+}
+
+#settingsScopeToggle.is-disabled {
+    opacity: .45;
+    cursor: not-allowed
+}
+
 .settings-header h2 {
     font-size: 1.05rem;
     font-weight: 500;
@@ -2070,7 +2084,8 @@ p {
 }
 
 .chapter-body p+p {
-    text-indent: var(--text-indent)
+    text-indent: var(--text-indent);
+    margin-top: var(--para-gap, 0px)
 }
 
 .book-end {

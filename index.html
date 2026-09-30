@@ -131,9 +131,19 @@
  </aside>
  <aside aria-label="reading settings" class="settings-panel" id="settingsPanel">
   <div class="settings-header">
-   <h2>
-    reading settings
-   </h2>
+   <div class="settings-header-left">
+    <h2>
+     reading settings
+    </h2>
+    <div class="toggle-group" id="settingsScopeToggle" title="apply page settings to every book, or only to the open book">
+     <button class="toggle-btn is-selected" data-scope="global" type="button">
+      global
+     </button>
+     <button class="toggle-btn" data-scope="book" type="button">
+      this book
+     </button>
+    </div>
+   </div>
    <button class="settings-close" id="settingsClose">
     ✕
    </button>
@@ -171,6 +181,17 @@
      </span>
      <div class="settings-control">
       <input class="settings-input" id="bodyIndentInput" max="40" min="0" step="1" type="number" value="24"/>
+      <span class="settings-row-value">
+       px
+      </span>
+     </div>
+    </div>
+    <div class="settings-row">
+     <span class="settings-row-label">
+      gap
+     </span>
+     <div class="settings-control">
+      <input class="settings-input" id="gapInput" max="60" min="0" step="1" type="number" value="0"/>
       <span class="settings-row-value">
        px
       </span>
@@ -487,7 +508,7 @@
        </div>
        <div class="library-menu-group">
         <button aria-expanded="false" class="library-menu-item library-menu-parent" id="libraryAddToggle" type="button">
-         <span>Add</span>
+         <span>add</span>
          <svg class="library-menu-chevron" fill="none" viewbox="0 0 24 24">
           <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
          </svg>
