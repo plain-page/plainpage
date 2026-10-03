@@ -2023,11 +2023,11 @@ main {
 }
 
 .chapter-meta {
-	font-family: var(--author-font);
+	font-family: var(--body-font);
 	font-size: 11px;
 	line-height: 1.4;
 	letter-spacing: .04em;
-	color: var(--ink);
+	color: rgba(var(--ink-rgb), .75);
 	margin: .7rem 0 0 0;
 	text-align: center;
 	transition: color .35s ease;
@@ -3261,11 +3261,11 @@ body.library-open .touch-hint {
     position: fixed;
     bottom: 20px;
     right: 24px;
-    font-family: system-ui, sans-serif;
+    font-family: var(--body-font);
     font-size: 11px;
     letter-spacing: .02em;
-    color: var(--ink-quiet);
-    opacity: .4;
+    color: var(--ink);
+    opacity: .2;
     pointer-events: none;
     z-index: 21;
     transition: opacity .3s ease
