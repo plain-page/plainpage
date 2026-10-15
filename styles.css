@@ -73,8 +73,8 @@ html::-webkit-scrollbar {
   width: 4px;
   border-radius: 0;
   background: var(--ink);
-  opacity: 0.28;
-  transition: opacity 0.25s ease;
+  opacity: 0;
+  transition: opacity 0.4s ease;
   pointer-events: auto;
   cursor: pointer;
 }
@@ -3386,8 +3386,15 @@ body {
 .custom-scrollbar-thumb.is-dragging,
 .custom-scrollbar-thumb.is-visible,
 .custom-scrollbar-thumb:hover {
-  opacity: 1;
   background-color: var(--ink);
+}
+.custom-scrollbar-thumb {
+  opacity: 0;
+}
+.custom-scrollbar-thumb.is-dragging,
+.custom-scrollbar-thumb.is-visible,
+.custom-scrollbar-thumb:hover {
+  opacity: 1;
 }
 .book-info-desc-save,
 .book-info-status-btn.is-active,
