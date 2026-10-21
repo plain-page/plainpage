@@ -223,7 +223,7 @@ a:hover {
   background: linear-gradient(
     to bottom,
     var(--paper) 0,
-    var(--paper) 30%,
+    var(--paper) 60%,
     transparent 100%
   );
   opacity: 0;
@@ -3808,10 +3808,10 @@ body[data-ui-font]
   -webkit-mask-image: linear-gradient(
     to bottom,
     #000 0,
-    #000 30%,
+    #000 60%,
     transparent 100%
   );
-  mask-image: linear-gradient(to bottom, #000 0, #000 30%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0, #000 60%, transparent 100%);
 }
 .sidebar-book:hover {
   background: 0 0;
@@ -3863,4 +3863,9 @@ body[data-ui-font]
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   touch-action: pan-x pan-y;
+}
+
+/* hide the toolbar fade while the page is scrolled to the very top */
+body.at-top .hover-zone .toolbar-fade {
+  opacity: 0;
 }
