@@ -311,7 +311,6 @@ a:hover {
   width: 18px;
   height: 18px;
   fill: currentColor;
-  overflow: visible;
 }
 .search-overlay {
   position: fixed;
@@ -1925,6 +1924,31 @@ p {
 }
 .touch-hint.show {
   opacity: 0.7;
+}
+.search-back-btn {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--ink-quiet);
+  background: var(--paper);
+  border: 1px solid var(--ink-quiet);
+  padding: 7px 14px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  z-index: 21;
+}
+.search-back-btn.is-visible {
+  opacity: 0.85;
+  transform: none;
+  pointer-events: auto;
 }
 .library-view {
   display: none;
