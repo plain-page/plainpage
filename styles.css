@@ -312,6 +312,9 @@ a:hover {
   height: 18px;
   fill: currentColor;
 }
+#sidebarToggle svg {
+  overflow: visible;
+}
 .search-overlay {
   position: fixed;
   inset: 0;
