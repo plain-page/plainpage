@@ -311,6 +311,7 @@ a:hover {
   width: 18px;
   height: 18px;
   fill: currentColor;
+  overflow: visible;
 }
 .search-overlay {
   position: fixed;
