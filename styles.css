@@ -2969,6 +2969,8 @@ body.library-open .touch-hint {
   pointer-events: none;
   z-index: 21;
   transition: opacity 0.3s ease;
+  white-space: pre-line;
+  text-align: right;
 }
 @media (max-width: 600px) {
   .shortcuts-hint {
