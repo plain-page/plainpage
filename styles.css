@@ -957,9 +957,6 @@ a:hover {
   color: var(--ink-quiet);
   margin-top: 6px;
 }
-.sidebar-words-today {
-  margin-top: 2px;
-}
 .sidebar-hairline {
   height: 1px;
   background: var(--hairline);
