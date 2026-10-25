@@ -195,3 +195,7 @@ else if(!/^(ArrowUp|ArrowDown|PageUp|PageDown|Home|End|[wsjlWSJL])$/.test(k))ret
 e.preventDefault();e.stopImmediatePropagation()},!0);
 window.addEventListener("blur",function(){focusMode&&focusPause()});
 new MutationObserver(function(){focusMode&&document.body.classList.contains("library-open")&&exitFocus(!1)}).observe(document.body,{attributes:!0,attributeFilter:["class"]});
+
+function renderWordsToday(){}
+function getWordsToday(){return{date:"",count:0}}
+function resetWordsToday(){}
