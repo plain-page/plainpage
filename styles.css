@@ -3982,12 +3982,43 @@ body.focus-mode .custom-scrollbar-track {
 .focus-word span:last-child {
   text-align: left;
 }
-.focus-icon-book {
+body.focus-mode #focusToggle {
   display: none;
 }
-body.focus-mode .focus-icon-mug {
+.focus-exit {
+  appearance: none;
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 21;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: 0 0;
+  color: var(--ink-quiet);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease;
+}
+body.focus-mode .focus-exit {
+  display: flex;
+}
+body.library-open .focus-exit {
   display: none;
 }
-body.focus-mode .focus-icon-book {
-  display: block;
+.focus-exit:hover,
+.focus-exit:focus-visible {
+  color: var(--ink-hover);
+  background: rgba(var(--ink-rgb), 0.08);
+  outline: 0;
+}
+.focus-exit svg {
+  width: 18px;
+  height: 18px;
 }
