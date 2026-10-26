@@ -211,7 +211,7 @@ a:hover {
   top: 0;
   bottom: 0;
   left: 0;
-  width: 110px;
+  width: 56px;
   z-index: 20;
 }
 .toolbar-fade {
@@ -228,7 +228,7 @@ a:hover {
   );
   opacity: 0;
   transition:
-    opacity 0.4s ease,
+    opacity 0.7s ease 0.15s,
     background 0.35s ease;
   pointer-events: none;
 }
@@ -236,6 +236,9 @@ a:hover {
 .toolbar-fade.is-visible,
 .toolbar.is-visible ~ .toolbar-fade {
   opacity: 1;
+  transition:
+    opacity 0.3s ease,
+    background 0.35s ease;
 }
 .toolbar {
   position: absolute;
@@ -251,8 +254,8 @@ a:hover {
   opacity: 0;
   transform: translateX(-8px);
   transition:
-    opacity 0.4s ease,
-    transform 0.4s ease;
+    opacity 0.7s ease 0.15s,
+    transform 0.7s ease 0.15s;
   pointer-events: none;
 }
 .hover-zone:hover .toolbar,
@@ -260,6 +263,9 @@ a:hover {
   opacity: 1;
   transform: translateX(0);
   pointer-events: auto;
+  transition:
+    opacity 0.3s ease,
+    transform 0.35s ease;
 }
 @media (min-width: 700px) {
   .toolbar {
@@ -285,8 +291,9 @@ a:hover {
   border-radius: 0;
   transition:
     color 0.2s ease,
-    transform 0.2s ease,
-    background 0.2s ease;
+    transform 0.5s ease 0.15s,
+    background 0.2s ease,
+    opacity 0.6s ease 0.15s;
   opacity: 0;
   transform: translateX(-4px);
   position: relative;
@@ -295,6 +302,11 @@ a:hover {
 .toolbar.is-visible .icon-btn {
   opacity: 1;
   transform: translateX(0);
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease,
+    opacity 0.3s ease;
 }
 .icon-btn:focus-visible,
 .icon-btn:hover {
@@ -3967,11 +3979,10 @@ body.focus-mode .custom-scrollbar-track {
 .focus-word span:nth-child(2)::after {
   content: "";
   position: absolute;
-  left: 50%;
-  width: 1px;
+  left: calc(50% - 0.5px);
+  width: 0;
   height: 1.5em;
-  background: var(--ink-quiet);
-  transform: translateX(-50%);
+  border-left: 1px solid var(--ink-quiet);
 }
 .focus-word span:nth-child(2)::before {
   bottom: 100%;
