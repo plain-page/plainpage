@@ -108,6 +108,11 @@ focusWpmNumEl.className="focus-num";
 focusWpmNumEl.title="double-click to change focus mode wpm (clear it to follow settings)";
 focusWpmEl.appendChild(focusWpmNumEl);focusWpmEl.appendChild(document.createTextNode(" wpm"));
 focusView.appendChild(focusWpmEl);
+var focusExitBtn=document.createElement("button");
+focusExitBtn.type="button";focusExitBtn.className="focus-exit";focusExitBtn.setAttribute("aria-label","exit focus mode");focusExitBtn.title="exit focus mode";
+focusExitBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>';
+document.body.appendChild(focusExitBtn);
+focusExitBtn.addEventListener("click",function(e){e.stopPropagation();this.blur();exitFocus()});
 focusWpmNumEl.addEventListener("click",function(e){e.stopPropagation()});
 focusWpmNumEl.addEventListener("dblclick",function(e){e.preventDefault();e.stopPropagation();focusEditWpm()});
 focusNumEl.addEventListener("click",function(e){e.stopPropagation()});
@@ -147,9 +152,7 @@ var i=Math.min(focusWords.length-1,Math.max(0,focusIdx+d));
 i!==focusIdx&&(focusIdx=i,focusShow())}
 function focusSetMode(on){
 focusMode=on;
-document.body.classList.toggle("focus-mode",on);
-var label=on?"normal reading":"focus mode";
-focusToggle.title=label;focusToggle.setAttribute("aria-label",label)}
+document.body.classList.toggle("focus-mode",on)}
 function enterFocus(sel){
 if(!currentBook||document.body.classList.contains("library-open"))return;
 focusClearFlash();
