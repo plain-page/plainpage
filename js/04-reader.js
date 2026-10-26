@@ -24,6 +24,7 @@ re.lastIndex=0;
 while(m=re.exec(text)){
 var prev=out[out.length-1];
 if(first&&0===m.index&&prev&&focusJoins(prev,node)){prev.t+=m[0];prev.m=node;prev.e=m[0].length}
+else if(prev&&/^(\.{2,}|\u2026)+$/.test(m[0])){prev.t+=m[0];prev.m=node;prev.e=m.index+m[0].length}
 else out.push({t:m[0],n:node,s:m.index,m:node,e:m.index+m[0].length});
 first=!1}}
 return focusMarkParagraphs(out)}
@@ -60,7 +61,7 @@ prev&&prev.blk!==b&&(prev.w.p=!0);
 prev={w:w,blk:w.m.parentNode.closest(focusBlock)}}
 return list}
 function focusDelay(w){
-var d=6e4/focusWpm(),t=w.t,r=/[.!?\u2026]["'\u201d\u2019)\]]*$/.test(t)?focusSentencePause*d:/[,;:\u2014]["'\u201d\u2019)\]]*$/.test(t)?1.5*d:d;
+var d=6e4/focusWpm(),t=w.t,r=/(\.{3}|\u2026)["'\u201d\u2019)\]]*$/.test(t)?d:/[.!?\u2026]["'\u201d\u2019)\]]*$/.test(t)?focusSentencePause*d:/[,;:\u2014]["'\u201d\u2019)\]]*$/.test(t)?1.5*d:d;
 return w.p?Math.max(r,focusParagraphPause*d):r}
 function focusShow(){
 var w=focusWords[focusIdx].t,p=focusPivot(w),kids=focusWordEl.children;
