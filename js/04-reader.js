@@ -24,10 +24,14 @@ re.lastIndex=0;
 while(m=re.exec(text)){
 var prev=out[out.length-1];
 if(first&&0===m.index&&prev&&focusJoins(prev,node)){prev.t+=m[0];prev.m=node;prev.e=m[0].length}
-else if(prev&&/^(\.{2,}|\u2026)+$/.test(m[0])){prev.t+=m[0];prev.m=node;prev.e=m.index+m[0].length}
 else out.push({t:m[0],n:node,s:m.index,m:node,e:m.index+m[0].length});
 first=!1}}
-return focusMarkParagraphs(out)}
+var merged=[];
+for(var k=0;k<out.length;k++){
+var cur=out[k],last=merged[merged.length-1];
+if(last&&/^(?:[.\u2026]+["'\u201d\u2019)\]]*|["'\u201d\u2019)\]]*[.\u2026][.\u2026"'\u201d\u2019)\]]*|[\u201d\u2019)\]]+)$/.test(cur.t)&&last.m.parentNode.closest(focusBlock)===cur.n.parentNode.closest(focusBlock)){last.t+=cur.t;last.m=cur.m;last.e=cur.e}
+else merged.push(cur)}
+return focusMarkParagraphs(merged)}
 function focusWordTop(w){
 focusRange.setStart(w.n,w.s);focusRange.setEnd(w.m,w.e);
 var r=focusRange.getClientRects();
