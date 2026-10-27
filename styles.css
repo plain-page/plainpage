@@ -1988,10 +1988,13 @@ body.library-open .library-view {
 }
 body.library-open .hover-zone,
 body.library-open .page,
+body.library-open .shortcuts-hint,
 body.library-open .touch-hint {
   display: none;
 }
 .library-header {
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
   padding: 16px 24px 12px;
   background: var(--paper);
@@ -2004,11 +2007,11 @@ body.library-open .touch-hint {
 }
 .library-label {
   font-family: system-ui, sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
   color: var(--ink-quiet);
-  margin: 0 0 12px 0;
+  margin: 12px 6px 0;
+  order: 2;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2054,9 +2057,8 @@ body.library-open .touch-hint {
 }
 .library-label-input {
   font-family: system-ui, sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
   color: var(--ink);
   background: 0 0;
   border: none;
@@ -2072,7 +2074,7 @@ body.library-open .touch-hint {
 }
 .library-search-input {
   appearance: none;
-  border: 3px solid var(--hairline);
+  border: 2px solid var(--ink-quiet);
   background: 0 0;
   padding: 8px 14px;
   border-radius: 0;
@@ -2085,6 +2087,8 @@ body.library-open .touch-hint {
 }
 .library-search-input::placeholder {
   color: var(--ink-quiet);
+  text-align: center;
+  font-size: 0.9em;
 }
 .library-search-input:focus {
   outline: 0;
@@ -2097,7 +2101,7 @@ body.library-open .touch-hint {
 }
 .library-btn {
   appearance: none;
-  border: 3px solid var(--hairline);
+  border: 2px solid var(--ink-quiet);
   background: 0 0;
   width: 36px;
   height: 36px;
@@ -2443,7 +2447,7 @@ body.library-open .touch-hint {
 }
 .library-shelf-label {
   font-family: system-ui, sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 400;
   letter-spacing: 0.02em;
   color: var(--ink-quiet);
@@ -4032,4 +4036,37 @@ body.library-open .focus-exit {
 .focus-exit svg {
   width: 18px;
   height: 18px;
+}
+
+body.library-open .settings-panel {
+  left: auto;
+  right: 0;
+  border-right: none;
+  border-left: 1px solid var(--hairline);
+  transform: translateX(100%);
+}
+body.library-open .settings-panel.is-open {
+  transform: translateX(0);
+}
+.settings-panel {
+  visibility: hidden;
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    visibility 0s linear 0.35s;
+}
+.settings-panel.is-open {
+  visibility: visible;
+  transition:
+    transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    visibility 0s linear 0s;
+}
+
+.library-label:has(.library-back-btn[hidden]) {
+  display: none;
 }
