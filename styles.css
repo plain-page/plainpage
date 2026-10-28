@@ -1822,7 +1822,7 @@ main {
 }
 .chapter-byline .cb-title {
   font-family: var(--title-font);
-  font-size: calc(3.5rem * var(--text-scale));
+  font-size: calc(2.8rem * var(--text-scale));
   font-weight: 500;
   letter-spacing: 0.01em;
   color: var(--ink);
