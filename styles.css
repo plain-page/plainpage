@@ -3121,7 +3121,7 @@ body.drag-over-files {
   position: relative;
 }
 body.drag-over-files::after {
-  content: "Drop .epub files to add them to your library";
+  content: "Drop .epub files or a plainpage backup to add them to your library";
   position: fixed;
   inset: 16px;
   z-index: 80;
@@ -3920,3 +3920,54 @@ body[data-ui-font] .book-pop,body[data-ui-font] .book-pop *{font-family:var(--ui
 .library-panel{width:400px}.library-panel-actions{display:flex;align-items:center;gap:6px}.library-panel-tools{padding:14px 22px 0;flex-shrink:0}.library-panel-tools input{width:100%;box-sizing:border-box}.library-panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 16px;padding:18px 22px 28px}.library-panel .library-tile:hover::after{transform:translate(5px,5px)}
 .library-panel-header{gap:12px;padding:16px 22px}.library-panel-header input{flex:1;min-width:0}.library-panel-header .settings-action-btn{flex-shrink:0;white-space:nowrap}
 .library-panel.is-instant{transition:none!important}
+
+/* presets: name input + save button (matches the other settings inputs) */
+.preset-save-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+.preset-save-row input[type="text"] {
+  appearance: none;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--hairline);
+  background: 0 0;
+  padding: 5px 10px;
+  border-radius: 0;
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--ink);
+  transition: border-color 0.2s ease;
+}
+.preset-save-row input[type="text"]::placeholder {
+  color: var(--ink-quiet);
+}
+.preset-save-row input[type="text"]:focus {
+  outline: 0;
+  border-color: var(--ink);
+}
+.preset-save-row button {
+  appearance: none;
+  flex-shrink: 0;
+  border: 1px solid var(--hairline);
+  background: 0 0;
+  padding: 5px 18px;
+  border-radius: 0;
+  font-family: system-ui, sans-serif;
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+.preset-save-row button:hover,
+.preset-save-row button:focus-visible {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  outline: 0;
+}
