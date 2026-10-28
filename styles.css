@@ -1848,7 +1848,7 @@ main {
 }
 .chapter-meta {
   font-family: var(--body-font);
-  font-size: calc(1em * var(--text-scale));
+  font-size: 1em;
   line-height: 1.4;
   letter-spacing: 0.04em;
   color: rgba(var(--ink-rgb), 0.75);
