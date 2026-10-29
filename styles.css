@@ -3971,3 +3971,10 @@ body[data-ui-font] .book-pop,body[data-ui-font] .book-pop *{font-family:var(--ui
   border-color: var(--ink);
   outline: 0;
 }
+
+.saved-theme-item.is-active{background:rgba(var(--ink-rgb),0.08)}
+.preset-actions{display:flex;align-items:center;gap:6px}
+.preset-update,.settings-footer button{appearance:none;flex-shrink:0;border:1px solid var(--hairline);background:0 0;padding:5px 18px;border-radius:0;font-family:system-ui,sans-serif;font-size:.75rem;color:var(--ink-soft);cursor:pointer;transition:background .2s ease,color .2s ease,border-color .2s ease}
+.preset-update{padding:1px 10px;font-size:.7rem}
+.preset-update:hover,.preset-update:focus-visible,.settings-footer button:hover,.settings-footer button:focus-visible{background:var(--ink);color:var(--paper);border-color:var(--ink);outline:0}
+.settings-footer{flex-shrink:0;display:flex;justify-content:flex-end;padding:12px 24px;border-top:1px solid var(--hairline)}
