@@ -3980,3 +3980,5 @@ body[data-ui-font] .book-pop,body[data-ui-font] .book-pop *{font-family:var(--ui
 .settings-footer{flex-shrink:0;display:flex;justify-content:flex-end;padding:12px 24px;border-top:1px solid var(--hairline)}
 
 .book-info-modal,.footnote-popup{border:1px solid var(--ink);box-shadow:7px 7px 0 0 var(--ink)}
+
+#infoDescText{font-size:12px}
