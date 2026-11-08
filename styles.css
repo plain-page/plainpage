@@ -3187,7 +3187,7 @@ body.drag-over-files::after {
 }
 .library-tile img {
   border: 3px solid var(--ink);
-  padding: 1px;
+  padding: 2px;
   background: var(--paper);
 }
 .library-tile {
