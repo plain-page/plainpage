@@ -3183,6 +3183,7 @@ body.drag-over-files::after {
 }
 .library-tile::before {
   inset: 4px;
+  background-color: color-mix(in srgb, var(--paper) 22%, transparent);
 }
 .library-tile img {
   border: 3px solid var(--ink);
