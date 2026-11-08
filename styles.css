@@ -2621,18 +2621,6 @@ body.library-open .touch-hint {
 .library-tile .status-badge-complete {
   background: rgba(74, 92, 66, 0.82);
 }
-.library-tile .cover-progress {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 3px;
-  background: rgba(0, 0, 0, 0.25);
-}
-.library-tile .cover-progress-fill {
-  height: 100%;
-  background: #e9e1cb;
-}
 .library-tile.is-selecting {
   cursor: pointer;
 }
@@ -3190,18 +3178,16 @@ body.drag-over-files::after {
   opacity: 0.35;
   pointer-events: none;
 }
-.group-tile-card::before,
-.library-tile::before {
+.group-tile-card::before {
   inset: 3px;
+}
+.library-tile::before {
+  inset: 4px;
 }
 .library-tile img {
   border: 3px solid var(--ink);
-}
-.library-tile .cover-progress {
-  transition: height 0.2s ease;
-}
-.library-tile:hover .cover-progress {
-  height: 5px;
+  padding: 1px;
+  background: var(--paper);
 }
 .library-tile {
   box-shadow: 0 0 0 0 var(--ink);
@@ -3220,11 +3206,6 @@ body.drag-over-files::after {
 }
 .library-shelf-row {
   padding-left: 6px;
-}
-.library-tile .cover-progress {
-  left: 3px;
-  right: 3px;
-  bottom: 3px;
 }
 :root {
   --cover-noise: url("textures/diagonal-cover-overlay.png");
