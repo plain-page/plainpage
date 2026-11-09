@@ -4085,4 +4085,4 @@ body[data-texture-off] {
     position: relative;
   }
 }
-html:has(body.cursor-idle:not(.library-open):not(:has(.sidebar.is-open,.settings-panel.is-open,.search-panel.is-open,.book-info-modal.is-open,.group-delete-modal.is-open,.context-menu.is-open,.footnote-popup-overlay,#ppDialog))),html:has(body.cursor-idle:not(.library-open):not(:has(.sidebar.is-open,.settings-panel.is-open,.search-panel.is-open,.book-info-modal.is-open,.group-delete-modal.is-open,.context-menu.is-open,.footnote-popup-overlay,#ppDialog))) *{cursor:none!important}
+body.cursor-idle:not(.library-open):not(:has(.sidebar.is-open,.settings-panel.is-open,.search-panel.is-open,.book-info-modal.is-open,.group-delete-modal.is-open,.context-menu.is-open,.footnote-popup-overlay,#ppDialog)),body.cursor-idle:not(.library-open):not(:has(.sidebar.is-open,.settings-panel.is-open,.search-panel.is-open,.book-info-modal.is-open,.group-delete-modal.is-open,.context-menu.is-open,.footnote-popup-overlay,#ppDialog)) *{cursor:none!important}
