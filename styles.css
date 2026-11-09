@@ -915,6 +915,24 @@ a:hover {
   color: var(--ink-quiet);
   margin-top: 6px;
 }
+.sidebar-book-bar {
+  height: 10px;
+  margin-top: 8px;
+  box-sizing: border-box;
+  border: 1px solid var(--hairline);
+  --bar: 0%;
+}
+.sidebar-book-bar::after {
+  content: "";
+  display: block;
+  height: 100%;
+  width: var(--bar);
+  background-color: var(--ink);
+  background-image: var(--noise-light);
+  background-size: var(--tex-size, 100px) var(--tex-size, 100px);
+  background-position: center;
+  transition: width 0.35s ease;
+}
 .sidebar-hairline {
   height: 1px;
   background: var(--hairline);
