@@ -608,6 +608,9 @@ a:hover {
   color: var(--ink-soft);
   margin: 0;
 }
+.book-info-author-input{display:block;box-sizing:border-box;width:100%;font-family:var(--author-font);text-align:center;font-style:italic;font-size:1rem;color:var(--ink-soft);background:0 0;border:1px solid var(--hairline);border-radius:6px;padding:4px 8px;margin:0;outline:0}
+.book-info-author-input[hidden]{display:none}
+.book-info-author-input:focus{border-color:var(--ink-quiet)}
 .book-info-date {
   font-family: system-ui, sans-serif;
   text-align: center;
