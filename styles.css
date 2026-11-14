@@ -4008,11 +4008,8 @@ body[data-ui-font] .book-pop,body[data-ui-font] .book-pop *{font-family:var(--ui
 
 ::highlight(speedread){background-color:rgba(251,192,45,.2);text-decoration:underline;text-decoration-color:#fbc02d;text-decoration-thickness:3px;text-underline-offset:4px}.speed-pill{display:none;position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:90;align-items:center;gap:6px;padding:6px 16px;border-radius:0;background:var(--ink);background-image:var(--noise-light);background-size:var(--tex-size, 100px) var(--tex-size, 100px);background-position:center;color:var(--paper);font:500 .8rem system-ui,sans-serif;opacity:0;transition:opacity .3s;user-select:none}.speed-pill.is-on{display:flex}.speed-pill.is-visible{opacity:1}.speed-pill-x{background:0 0;border:0;color:inherit;font:inherit;line-height:1;padding:0 0 0 6px;cursor:pointer;opacity:.7}.speed-pill-x:hover{opacity:1}.speed-pill input{width:3.4em;background:0 0;border:0;border-bottom:1px solid currentColor;color:inherit;font:inherit;text-align:center;outline:0;-moz-appearance:textfield}
 .speed-toggle{display:flex;align-items:center;justify-content:center;padding:4px;margin-left:auto;background:0 0;border:0;color:inherit;cursor:pointer}.speed-toggle.is-running .i-play,.speed-toggle:not(.is-running) .i-x{display:none}
-body[data-texture-off] {
-  --noise-bg: none;
-  --noise-light: none;
-  --cover-noise: none;
-}
+body[data-texture-off]:not(.library-open),body[data-texture-off]:not(.library-open) .library-header{background-image:none}
+body.library-open #textureToggle{opacity:.4;pointer-events:none;filter:grayscale(1)}
 .book-info-modal,
 .footnote-popup,
 .group-delete-modal,
