@@ -3826,102 +3826,6 @@ body[data-ui-font] .book-pop * {
 #infoDescText {
   font-size: calc(11px * var(--ui-scale, 1));
 }
-::highlight(speedread) {
-  background-color: color-mix(in srgb, var(--ink) 10%, transparent);
-  text-decoration-line: underline;
-  text-decoration-thickness: 1px;
-}
-.speed-pill {
-  display: none;
-  position: fixed;
-  top: 14px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 90;
-  align-items: center;
-  gap: 6px;
-  padding: 7px 12px;
-  isolation: isolate;
-  color: var(--ink);
-  font-family: system-ui, sans-serif;
-  font-size: calc(0.8rem * var(--ui-scale, 1));
-  opacity: 0;
-  transition: opacity 0.3s;
-  user-select: none;
-}
-.speed-pill::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: var(--ink);
-  background-image: var(--noise-light);
-  background-size: var(--tex-size, 100px) var(--tex-size, 100px);
-  background-position: center;
-  transform: translate(6px, 6px);
-}
-.speed-pill::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-color: var(--paper);
-  background-image: var(--noise-bg);
-  background-size: var(--tex-size, 100px) var(--tex-size, 100px);
-  background-position: center;
-  border: 1px solid var(--ink);
-}
-body[data-ui-font] .speed-pill,
-body[data-ui-font] .speed-pill * {
-  font-family: var(--ui-font-family), system-ui, sans-serif !important;
-}
-.speed-pill.is-on {
-  display: flex;
-}
-.speed-pill.is-visible {
-  opacity: 1;
-}
-.speed-pill-x {
-  background: 0 0;
-  border: 0;
-  color: inherit;
-  font: inherit;
-  line-height: 1;
-  padding: 0 0 0 6px;
-  cursor: pointer;
-  opacity: 1;
-}
-.speed-pill-x:hover {
-  opacity: 1;
-}
-.speed-pill input {
-  width: 3.4em;
-  background: 0 0;
-  border: 0;
-  border-bottom: 1px solid currentColor;
-  color: inherit;
-  font: inherit;
-  text-align: center;
-  outline: 0;
-  -moz-appearance: textfield;
-}
-.speed-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  margin-left: auto;
-  background: 0 0;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-}
-.speed-toggle.is-running .i-play,
-.speed-toggle:not(.is-running) .i-x {
-  display: none;
-}
 body[data-texture-off]:not(.library-open),
 body[data-texture-off]:not(.library-open) .library-header {
   background-image: none;
@@ -4477,9 +4381,7 @@ button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
     .toc-toggle
   ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
     .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(
-    .speed-pill-x
-  ):not(.context-menu button):not(.library-menu-submenu button):hover {
+  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):hover {
   translate: -2px -2px;
   box-shadow: 4px 4px 0 0 var(--ink);
 }
@@ -4487,9 +4389,7 @@ button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
     .toc-toggle
   ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
     .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(
-    .speed-pill-x
-  ):not(.context-menu button):not(.library-menu-submenu button):active {
+  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):active {
   translate: 0 0;
   box-shadow: 1px 1px 0 0 var(--ink);
 }
@@ -4591,9 +4491,7 @@ button:not(.is-active):not(.is-selected):not(.sidebar-item):not(
     .toc-toggle
   ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
     .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(
-    .speed-pill-x
-  ):not(.context-menu button):not(.library-menu-submenu button):not(
+  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
     .selection-bar-inner button
   ) {
   border: 1px solid var(--ink);
@@ -4734,9 +4632,7 @@ button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
     .toc-toggle
   ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
     .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(
-    .speed-pill-x
-  ):not(.context-menu button):not(.library-menu-submenu button):not(
+  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
     :is(
       .book-info-cover,
       .cp-swatch,
@@ -4758,9 +4654,7 @@ button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
     .toc-toggle
   ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
     .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(
-    .speed-pill-x
-  ):not(.context-menu button):not(.library-menu-submenu button):not(
+  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
     :is(
       .book-info-cover,
       .cp-swatch,
@@ -4797,9 +4691,7 @@ button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
     .toc-toggle
   ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
     .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(
-    .speed-pill-x
-  ):not(.context-menu button):not(.library-menu-submenu button):not(
+  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
     :is(
       .book-info-cover,
       .cp-swatch,
@@ -4820,9 +4712,7 @@ button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
     .toc-toggle
   ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
     .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(
-    .speed-pill-x
-  ):not(.context-menu button):not(.library-menu-submenu button):not(
+  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
     :is(
       .book-info-cover,
       .cp-swatch,
