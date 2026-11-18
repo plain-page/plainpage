@@ -2542,9 +2542,9 @@ body.library-open .touch-hint {
 }
 .selection-status-group {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   background: transparent;
-  padding: 3px;
+  padding: 3px 7px 7px 3px;
   border-radius: 0;
 }
 .selection-bar-btn,
@@ -4377,28 +4377,6 @@ html body[data-theme] {
   display: none;
 }
 
-button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
-    .toc-toggle
-  ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
-    .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):hover {
-  translate: -2px -2px;
-  box-shadow: 4px 4px 0 0 var(--ink);
-}
-button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
-    .toc-toggle
-  ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
-    .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):active {
-  translate: 0 0;
-  box-shadow: 1px 1px 0 0 var(--ink);
-}
-.selection-bar-inner button:not(:disabled):not(.selection-bar-cancel):hover {
-  box-shadow: 4px 4px 0 0 var(--paper);
-}
-.selection-bar-inner button:not(:disabled):not(.selection-bar-cancel):active {
-  box-shadow: 1px 1px 0 0 var(--paper);
-}
 .toggle-group {
   overflow: visible;
 }
@@ -4416,62 +4394,20 @@ html
   :is(
     .book-info-close,
     .book-info-cover-btn,
-    .book-info-desc-cancel,
     .book-info-desc-edit-btn,
     .book-info-fetch-btn,
-    .chapter-nav-btn,
     .custom-row-input-group .file-remove,
     .footnote-popup-close,
-    .group-delete-cancel,
-    .group-delete-confirm,
-    .group-picker-item,
-    .library-back-btn,
     .search-header .search-close,
     .settings-close,
     .sidebar-book-info-btn,
-    .settings-action-btn,
-    .preset-update,
-    .preset-save-row button,
-    .theme-editor .theme-save-btn,
-    .custom-row-input-group .font-save-btn,
-    .book-info-delete-btn,
-    .book-info-status-btn:not(.is-active),
-    .toggle-btn:not(.is-selected),
-    .library-btn:not(.is-active),
-    .library-menu-dropdown > .library-menu-item,
-    .library-menu-group:not(.is-open) > .library-menu-item
+    .toggle-btn:not(.is-selected)
   ):is(:hover, :focus-visible) {
   background-color: transparent;
   background-image: none;
   color: var(--ink);
 }
-html body :is(.book-info-delete-btn):is(:hover, :focus-visible) {
-  border-color: transparent;
-}
-html body .shelf-arrow:is(:hover, :focus-visible) {
-  background-color: var(--paper);
-  background-image: none;
-  color: var(--ink);
-}
-html
-  body
-  :is(.book-info-desc-save, .group-picker-new button):is(
-    :hover,
-    :focus-visible
-  ) {
-  background-color: var(--ink);
-  background-image: var(--noise-light);
-  color: var(--paper);
-}
-html
-  body
-  :is(
-    .selection-bar-btn,
-    .selection-status-btn,
-    .selection-bar-cancel,
-    .selection-bar-select-all,
-    .selection-bar-btn-danger
-  ):is(:hover, :focus-visible) {
+html body .selection-bar-cancel:is(:hover, :focus-visible) {
   background-color: transparent;
   background-image: none;
   color: var(--paper);
@@ -4486,18 +4422,6 @@ html
   font-size: calc(0.83rem * var(--ui-scale, 1));
   line-height: normal;
   color: var(--ink);
-}
-button:not(.is-active):not(.is-selected):not(.sidebar-item):not(
-    .toc-toggle
-  ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
-    .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
-    .selection-bar-inner button
-  ) {
-  border: 1px solid var(--ink);
-}
-.selection-bar-inner :is(.selection-status-btn, .selection-bar-select-all) {
-  border: 1px solid var(--paper);
 }
 
 .sidebar-book-info-btn,
@@ -4628,118 +4552,89 @@ body[data-ui-font] .library-tile .progress-ribbon::after {
 :where(button) {
   position: relative;
 }
-button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
-    .toc-toggle
-  ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
-    .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
-    :is(
-      .book-info-cover,
-      .cp-swatch,
-      .sidebar-book-info-btn,
-      .sidebar-label-toggle,
-      .book-info-desc-edit-btn,
-      .book-info-fetch-btn,
-      .book-info-cover-btn,
-      .library-search-clear,
-      .file-remove,
-      .font-delete,
-      .theme-delete
-    )
-  ):is(:hover, :active) {
-  overflow: visible;
-  box-shadow: none;
-}
-button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
-    .toc-toggle
-  ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
-    .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
-    :is(
-      .book-info-cover,
-      .cp-swatch,
-      .sidebar-book-info-btn,
-      .sidebar-label-toggle,
-      .book-info-desc-edit-btn,
-      .book-info-fetch-btn,
-      .book-info-cover-btn,
-      .library-search-clear,
-      .file-remove,
-      .font-delete,
-      .theme-delete
-    )
-  ):is(:hover, :active)::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  pointer-events: none;
-  background-color: var(--ink);
-  background-image: var(--noise-light);
-  background-size: var(--tex-size, 100px) var(--tex-size, 100px);
-  background-position: center;
-  transform: translate(var(--o), var(--o));
-  clip-path: polygon(
-    calc(100% - var(--o)) 0,
-    100% 0,
-    100% 100%,
-    0 100%,
-    0 calc(100% - var(--o)),
-    calc(100% - var(--o)) calc(100% - var(--o))
-  );
-}
-button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
-    .toc-toggle
-  ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
-    .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
-    :is(
-      .book-info-cover,
-      .cp-swatch,
-      .sidebar-book-info-btn,
-      .sidebar-label-toggle,
-      .book-info-desc-edit-btn,
-      .book-info-fetch-btn,
-      .book-info-cover-btn,
-      .library-search-clear,
-      .file-remove,
-      .font-delete,
-      .theme-delete
-    )
-  ):hover::before {
+button:not(
+    :disabled,
+    .is-active,
+    .is-selected,
+    .sidebar-item,
+    .toc-toggle,
+    .toggle-btn,
+    .toolbar .icon-btn,
+    .book-info-close,
+    .footnote-popup-close,
+    .search-close,
+    .settings-close,
+    .selection-bar-cancel,
+    .context-menu button,
+    .library-menu-submenu button,
+    .book-info-cover,
+    .cp-swatch,
+    .sidebar-book-info-btn,
+    .sidebar-label-toggle,
+    .book-info-desc-edit-btn,
+    .book-info-fetch-btn,
+    .book-info-cover-btn,
+    .library-search-clear,
+    .file-remove,
+    .font-delete,
+    .theme-delete
+  ) {
+  --edge: var(--ink);
+  --face: var(--paper);
+  --edge-tex: var(--noise-light);
+  --face-tex: var(--noise-bg);
   --o: 4px;
-}
-button:not(:disabled):not(.is-active):not(.is-selected):not(.sidebar-item):not(
-    .toc-toggle
-  ):not(.toggle-btn):not(.toolbar .icon-btn):not(.book-info-close):not(
-    .footnote-popup-close
-  ):not(.search-close):not(.settings-close):not(.selection-bar-cancel):not(.context-menu button):not(.library-menu-submenu button):not(
-    :is(
-      .book-info-cover,
-      .cp-swatch,
-      .sidebar-book-info-btn,
-      .sidebar-label-toggle,
-      .book-info-desc-edit-btn,
-      .book-info-fetch-btn,
-      .book-info-cover-btn,
-      .library-search-clear,
-      .file-remove,
-      .font-delete,
-      .theme-delete
-    )
-  ):active::before {
-  --o: 1px;
-}
-.selection-bar-inner
-  button:not(:disabled):not(.selection-bar-cancel):is(:hover, :active) {
-  box-shadow: none !important;
-}
-.selection-bar-inner
-  button:not(:disabled):not(.selection-bar-cancel):is(:hover, :active)::before {
-  background-color: var(--paper) !important;
-  background-image: var(--noise-bg) !important;
-}
-.selection-bar-inner .selection-status-btn:is(:hover, :active)::before {
-  inset: 0 !important;
+  overflow: visible;
+  border: 1px solid var(--edge);
+
+  .selection-bar-inner & {
+    --edge: var(--paper);
+    --face: var(--ink);
+    --edge-tex: var(--noise-bg);
+    --face-tex: var(--noise-light);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    pointer-events: none;
+    background-color: var(--edge);
+    background-image: var(--edge-tex);
+    background-size: var(--tex-size, 100px) var(--tex-size, 100px);
+    background-position: center;
+    transform: translate(var(--o), var(--o));
+    clip-path: polygon(
+      calc(100% - var(--o)) 0,
+      100% 0,
+      100% 100%,
+      0 100%,
+      0 calc(100% - var(--o)),
+      calc(100% - var(--o)) calc(100% - var(--o))
+    );
+  }
+
+  &:is(:hover, :focus-visible) {
+    background-color: var(--edge);
+    background-image: var(--edge-tex);
+    background-size: var(--tex-size, 100px) var(--tex-size, 100px);
+    background-position: center;
+    color: var(--face);
+  }
+
+  &:is(.book-info-desc-save, .group-picker-new button):is(
+      :hover,
+      :focus-visible
+    ) {
+    background-color: var(--face);
+    background-image: var(--face-tex);
+    color: var(--edge);
+  }
+
+  &:active {
+    --o: 1px;
+    translate: 3px 3px;
+  }
 }
 .toggle-group .toggle-btn:not(.is-selected):hover {
   position: relative;
